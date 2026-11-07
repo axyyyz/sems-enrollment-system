@@ -1,7 +1,7 @@
 # SEMS – Student Information and Enrollment Management System
 
 Final project for **Platform Technologies** (Topic 10).
-**Group members:** _Name 1_, _Name 2_, _Name 3_  |  **Live site:** _GitHub Pages link_
+**Group members:** Garcia, Nathaniel Axyz M., Manilay, Cyron O., Opena, Luis Marco  |  **Live site:** _GitHub Pages link_
 
 ## Architecture
 Browser (HTML/CSS/JS) → **supabase-js SDK** → **Supabase** (REST API over HTTPS/JSON, Auth, PostgreSQL).
