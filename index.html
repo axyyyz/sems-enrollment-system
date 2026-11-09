@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
 <title>SEMS – Student Information and Enrollment Management System</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -38,28 +39,59 @@ label{display:block;font-size:13px;font-weight:600;color:var(--tx);margin:12px 0
 #t{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:12px 20px;border-radius:12px;opacity:0;pointer-events:none;transition:.2s;max-width:90%;z-index:9;box-shadow:var(--sh);font-weight:500}#t.show{opacity:1}#t.bad{background:var(--bad);color:#fff}
 .inl{display:flex;gap:6px;flex-wrap:wrap}.inl input{min-width:100px;flex:1}
 @media (max-width:760px){.auth{grid-template-columns:1fr}.hero{padding:28px 24px;min-height:0}.hero h1{font-size:28px}header{padding:10px 14px}.brand small{display:none}.hd h1{font-size:23px}}
+
+.cbox{position:relative;height:280px}.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.dataTables_wrapper::after{content:"";display:block;clear:both}
+.dataTables_wrapper table.dt{clear:both;margin:8px 0}
+.dataTables_length{float:left;margin-bottom:10px}.dataTables_filter{float:right;margin-bottom:10px}
+.dataTables_length label,.dataTables_filter label{margin:0;display:flex;align-items:center;gap:8px;font-weight:500;color:var(--mu)}
+.dataTables_length select{width:auto;padding:6px 8px}.dataTables_filter input{width:200px;padding:7px 10px}
+.dataTables_info{float:left;margin-top:12px;color:var(--mu);font-size:13px}.dataTables_paginate{float:right;margin-top:8px}
+.paginate_button{display:inline-block;padding:5px 12px;margin-left:4px;border:1px solid var(--bd);border-radius:8px;cursor:pointer;font-size:13px}
+.paginate_button:hover{border-color:var(--ac)}.paginate_button.current{background:var(--ac);border-color:var(--ac);color:var(--card);font-weight:600}.paginate_button.disabled{opacity:.4;cursor:default;pointer-events:none}
+table.dt th.sorting,table.dt th.sorting_asc,table.dt th.sorting_desc{cursor:pointer;user-select:none}
+table.dt th.sorting::after{content:" \2195";opacity:.35}table.dt th.sorting_asc::after{content:" \2191";color:var(--ac)}table.dt th.sorting_desc::after{content:" \2193";color:var(--ac)}
+.tech{max-width:760px;margin:0 auto 10px;text-align:left}.tech summary{cursor:pointer;text-align:center;font-weight:600;color:var(--ac)}.tech ul{margin:10px 0 0;padding-left:20px;line-height:1.8}
+footer a{color:var(--ac);text-decoration:none;font-weight:600}
 </style></head><body>
 <header><div class="brand"><i class="lg">S</i><div><b>SEMS</b><small>Student Enrollment and Records</small></div></div><div class="sp"></div><span id="who" class="pill"></span><button id="lo" onclick="logout()" style="display:none">Log out</button></header>
-<main id="app"></main><footer>SEMS · Student Information and Enrollment Management System · Platform Technologies Final Project</footer><div id="t"></div>
+<main id="app"></main><footer><details class="tech"><summary>Platform technologies used</summary><ul>
+<li><b>Supabase</b> as the cloud service for the PostgreSQL database, authentication and hosted API</li>
+<li><b>supabase-js</b> as the SDK for sign in, queries and RPC calls from the browser</li>
+<li><b>Supabase REST and RPC endpoints</b> as the web service that carries enrollment, payment, approval and grading requests</li>
+<li><b>JSON over HTTPS</b> as the interoperability format between the page and the backend</li>
+<li><b>Chart.js</b> as a library for the admin dashboard charts</li>
+<li><b>jsPDF</b> as a library for the downloadable enrollment slip</li>
+<li><b>DataTables with jQuery</b> as a plug-in for searching, sorting and paging tables</li>
+<li><b>Git and GitHub Pages</b> for version control, collaboration and deployment</li></ul></details>
+SEMS · Student Information and Enrollment Management System · Platform Technologies Final Project <a id="gh" hidden target="_blank" rel="noopener"> · Source code on GitHub</a></footer><div id="t"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 <script>
-/* ===== Configuration: paste your Supabase project values (Project Settings > API) ===== */
 const CFG={url:"https://edgbbujkmodutaarblne.supabase.co",key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkZ2JidWprbW9kdXRhYXJibG5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwNDYyMTYsImV4cCI6MjEwOTYyMjIxNn0.01Hn5MZq591SFmgAdUOP0rWSKkrH8ndurVwx-75CnZo"};
 const configured=!CFG.url.includes("YOUR_");
 const sb=configured?supabase.createClient(CFG.url,CFG.key):null;
 const $=s=>document.querySelector(s);
+const el=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function toast(m,bad){const t=$("#t");t.textContent=m;t.className="show "+(bad?"bad":"");clearTimeout(toast.h);toast.h=setTimeout(()=>t.className="",3500)}
 const peso=n=>"₱"+Number(n).toLocaleString();
 const tag=s=>`<span class="tag ${s}">${s}</span>`;
 const q=async p=>{const{data,error}=await p;if(error)throw error;return data};
 const call=async(p,ok)=>{const{error}=await p;if(error)toast(error.message,1);else toast(ok);await render()};
-let me=null,mode="in",SUBS=[];
+let me=null,mode="in",SUBS=[],tab="dash",after=null,charts=[],SLIP=null;
 const codes=e=>(e.enrollment_items||[]).map(i=>i.subject_code);
+const table=(heads,rows,empty,sortable)=>{
+ if(!rows.length)return `<p class="mu">${empty}</p>`;
+ const th=heads.map(h=>Array.isArray(h)?`<th class="noso">${h[0]}</th>`:`<th>${h}</th>`).join("");
+ return `<div class="tw"><table class="${sortable?"dt":""}"><thead><tr>${th}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`};
 async function loadMe(){const{data:{user}}=await sb.auth.getUser();if(!user){me=null;return}const{data,error}=await sb.from("profiles").select("*").eq("id",user.id).single();me=error?null:data}
 function setMode(m){mode=m;render()}
 async function login(){const{error}=await sb.auth.signInWithPassword({email:$("#u").value.trim(),password:$("#p").value});if(error)return toast(error.message,1);await loadMe();render()}
-async function logout(){await sb.auth.signOut();me=null;render()}
+async function logout(){await sb.auth.signOut();me=null;tab="dash";render()}
 async function register(){const v=i=>$("#"+i).value,name=v("rn").trim(),email=v("re").trim(),pw=v("rw");
  if(name.length<3)return toast("Enter your full name.",1);
  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return toast("Enter a valid email address.",1);
@@ -74,53 +106,122 @@ function vLogin(){const reg=mode==="up";return `<div class="auth"><section class
 <section class="card form"><div class="tabs"><button class="${reg?"":"on"}" onclick="setMode('in')">Sign in</button><button class="${reg?"on":""}" onclick="setMode('up')">Register</button></div>`+(reg?
 `<label>Full name</label><input id="rn" autocomplete="name"><label>Email</label><input id="re" type="email" autocomplete="email"><label>Program</label><select id="rg"><option>BS Information Technology</option><option>BS Computer Science</option><option>BS Information Systems</option></select><div class="row"><div><label>Password</label><input id="rw" type="password" autocomplete="new-password"></div><div><label>Confirm password</label><input id="rw2" type="password" autocomplete="new-password"></div></div><p class="mu">8+ characters with letters and digits. Your Student ID is generated for you.</p><button class="p w" onclick="register()">Create student account</button>`:
 `<label>Email</label><input id="u" type="email" autocomplete="username"><label>Password</label><input id="p" type="password" autocomplete="current-password" onkeydown="event.key==='Enter'&&login()"><p><button class="p w" onclick="login()">Sign in</button></p>`)+`</section></div>`}
+function downloadSlip(){
+ if(!SLIP||typeof window.jspdf==="undefined")return toast("PDF tool is not available right now.",1);
+ const{enr,subs}=SLIP,d=new window.jspdf.jsPDF();
+ let y=22,total=0;
+ const line=t=>{d.text(t,20,y);y+=8};
+ d.setFontSize(18);d.text("SEMS Enrollment Slip",20,y);y+=12;
+ d.setFontSize(11);
+ line("Student: "+me.full_name);
+ line("Student ID: "+me.student_no);
+ line("Program: "+me.program);
+ line("Enrollment no: "+enr.id);
+ line("Status: "+enr.status);
+ line("Payment: "+(enr.paid?"Paid, OR "+enr.or_no:"Unpaid"));
+ y+=4;
+ d.setFontSize(13);line("Subjects");d.setFontSize(11);
+ for(const c of codes(enr)){
+  const s=subs.find(x=>x.code===c);
+  total+=s.units;
+  line(c+"   "+s.title+"   "+s.units+" units");
+ }
+ y+=2;
+ line("Total units: "+total);
+ line("Assessed fee: PHP "+Number(enr.fee).toLocaleString());
+ y+=6;
+ d.setFontSize(9);d.text("Generated on "+new Date().toLocaleString(),20,y);
+ d.save("enrollment-slip-"+me.student_no+".pdf");
+}
 async function vStudent(){
  const[subs,enr,gr]=await Promise.all([q(sb.from("subjects").select("*").order("code")),q(sb.from("enrollments").select("*,enrollment_items(subject_code)").order("id")),q(sb.from("grades").select("*"))]);SUBS=subs;
  const sub=c=>subs.find(s=>s.code===c),pass=c=>gr.some(g=>g.subject_code===c&&g.grade<=3);
  const cur=enr.find(e=>e.status!=="Rejected"),last=enr[enr.length-1];
+ SLIP=cur?{enr:cur,subs}:null;
  const tu=gr.reduce((a,g)=>a+sub(g.subject_code).units,0),gwa=gr.length?(gr.reduce((a,g)=>a+g.grade*sub(g.subject_code).units,0)/tu).toFixed(2):"–";
  let enrl;
- if(cur)enrl=`<div class="tw"><table><tr><th>Subject</th><th>Units</th></tr>${codes(cur).map(s=>`<tr><td>${s} – ${esc(sub(s).title)}</td><td>${sub(s).units}</td></tr>`).join("")}</table></div><p>Status: ${tag(cur.status)} Payment: ${tag(cur.paid?"Paid":"Unpaid")} <span class="mu">Assessed fee ${peso(cur.fee)}${cur.or_no?" · OR "+esc(cur.or_no):""}</span></p>`;
+ if(cur)enrl=table(["Subject","Units"],codes(cur).map(s=>`<tr><td>${s} – ${esc(sub(s).title)}</td><td>${sub(s).units}</td></tr>`),"")+`<p>Status: ${tag(cur.status)} Payment: ${tag(cur.paid?"Paid":"Unpaid")} <span class="mu">Assessed fee ${peso(cur.fee)}${cur.or_no?" · OR "+esc(cur.or_no):""}</span></p><button class="p" onclick="downloadSlip()">Download enrollment slip (PDF)</button>`;
  else enrl=(last?`<p class="mu">Last request rejected: ${esc(last.note)}</p>`:"")+subs.filter(s=>!pass(s.code)).map(s=>{const ok=!s.prereq||pass(s.prereq);return `<label class="chk ${ok?"":"off"}"><input type="checkbox" class="sub" value="${s.code}" ${ok?"":"disabled"} onchange="calc()"><span>${s.code} – ${esc(s.title)} <span class="mu">(${s.units} units${s.prereq?" · prereq "+s.prereq:""}${ok?"":" – not met"})</span></span></label>`}).join("")+`<p>Selected: <b id="tu">0</b> units · Estimated fee: <b id="tf">${peso(0)}</b> <span class="mu">(₱1,000/unit + ₱1,500 misc.)</span></p><button class="p" onclick="submitEnroll()">Submit enrollment</button>`;
+ const grows=gr.map(g=>`<tr><td>${g.subject_code} – ${esc(sub(g.subject_code).title)}</td><td>${Number(g.grade).toFixed(2)}</td><td>${tag(g.grade<=3?"Passed":"Failed")}</td></tr>`);
  return `<div class="stats"><div class="stat"><span class="mu">Student ID</span><b style="font-size:17px">${esc(me.student_no)}</b></div><div class="stat"><span class="mu">Program</span><b style="font-size:15px">${esc(me.program)}</b></div><div class="stat"><span class="mu">GWA</span><b>${gwa}</b></div></div>
- <div class="card"><h2>Online enrollment</h2>${enrl}</div>
- <div class="card"><h2>Grades</h2><div class="tw"><table><tr><th>Subject</th><th>Grade</th><th>Remarks</th></tr>${gr.map(g=>`<tr><td>${g.subject_code} – ${esc(sub(g.subject_code).title)}</td><td>${Number(g.grade).toFixed(2)}</td><td>${tag(g.grade<=3?"Passed":"Failed")}</td></tr>`).join("")||`<tr><td colspan=3 class="mu">No grades yet.</td></tr>`}</table></div></div>`}
+<div class="card"><h2>Online enrollment</h2>${enrl}</div>
+<div class="card"><h2>Grades</h2>${table(["Subject","Grade","Remarks"],grows,"No grades yet.")}</div>`}
 function calc(){const cs=[...document.querySelectorAll(".sub:checked")].map(x=>x.value),u=cs.reduce((a,c)=>a+SUBS.find(s=>s.code===c).units,0);$("#tu").textContent=u;$("#tf").textContent=peso(cs.length?u*1000+1500:0)}
 const submitEnroll=()=>call(sb.rpc("submit_enrollment",{codes:[...document.querySelectorAll(".sub:checked")].map(x=>x.value)}),"Enrollment submitted. Please wait for the admin to verify your payment.");
 const allEnr=()=>q(sb.from("enrollments").select("*,profiles(full_name,student_no),enrollment_items(subject_code)").order("id",{ascending:false}));
 const pay=id=>call(sb.rpc("record_payment",{eid:id,or_no:$("#or"+id).value.trim()}),"Payment recorded.");
 const decide=(id,ok)=>call(sb.rpc("decide_enrollment",{eid:id,approve:ok,note:ok?"":$("#n"+id).value}),"Enrollment "+(ok?"approved":"rejected")+".");
 const postGrade=(sid,code)=>call(sb.rpc("post_grade",{sid,code,g:parseFloat($("#g"+sid.slice(0,8)+code).value)}),"Grade posted to the student portal.");
-let tab="enr";const setTab=t=>{tab=t;render()};
-const el=id=>document.getElementById(id);
+const setTab=t=>{tab=t;render()};
 const setRole=id=>call(sb.rpc("admin_set_role",{p_uid:id,p_role:el("ro"+id).value}),"Role updated.");
 const saveSubject=()=>call(sb.rpc("admin_save_subject",{p_code:el("sc").value,p_title:el("st").value,p_units:parseInt(el("su").value),p_prereq:el("sp").value}),"Subject saved.");
 const fillSub=c=>{const x=SUBS.find(y=>y.code===c);el("sc").value=x.code;el("st").value=x.title;el("su").value=x.units;el("sp").value=x.prereq||"";el("sc").scrollIntoView({behavior:"smooth",block:"center"})};
-async function aEnr(){
+function drawCharts(stat,bySub){
+ if(typeof Chart==="undefined")return;
+ const cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+ const tx=cv("--tx"),bd=cv("--bd");
+ charts.forEach(c=>c.destroy());charts=[];
+ charts.push(new Chart(el("c1"),{type:"doughnut",data:{labels:["Pending","Approved","Rejected"],datasets:[{data:[stat.Pending,stat.Approved,stat.Rejected],backgroundColor:[cv("--wn"),cv("--ok"),cv("--bad")],borderColor:cv("--card")}]},options:{maintainAspectRatio:false,plugins:{legend:{labels:{color:tx}}}}}));
+ charts.push(new Chart(el("c2"),{type:"bar",data:{labels:bySub.map(x=>x[0]),datasets:[{label:"Students enrolled",data:bySub.map(x=>x[1]),backgroundColor:cv("--ac"),borderRadius:6}]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tx},grid:{color:bd}},y:{beginAtZero:true,ticks:{color:tx,precision:0},grid:{color:bd}}}}}));
+}
+async function aDa(){
  const[e,st]=await Promise.all([allEnr(),q(sb.from("profiles").select("id").eq("role","Student"))]);
- return `<div class="stats"><div class="stat"><span class="mu">Students</span><b>${st.length}</b></div><div class="stat"><span class="mu">Pending</span><b>${e.filter(x=>x.status==="Pending").length}</b></div><div class="stat"><span class="mu">Unpaid</span><b>${e.filter(x=>!x.paid&&x.status==="Pending").length}</b></div><div class="stat"><span class="mu">Approved</span><b>${e.filter(x=>x.status==="Approved").length}</b></div></div>
- <div class="card"><h2>Enrollment requests</h2><p class="mu">Record the student's payment first, then approve. Approval is blocked until payment is recorded.</p><div class="tw"><table><tr><th>Student</th><th>Subjects</th><th>Fee</th><th>Payment</th><th>Decision</th></tr>${e.map(x=>`<tr><td>${esc(x.profiles.full_name)}<div class="mu">#${x.id} · ${esc(x.profiles.student_no)}</div></td><td>${codes(x).join(", ")}</td><td>${peso(x.fee)}</td><td>${x.paid?tag("Paid")+`<div class="mu">OR ${esc(x.or_no)}</div>`:(x.status==="Pending"?`<div class="inl"><input id="or${x.id}" placeholder="OR-0001"><button class="g" onclick="pay(${x.id})">Record</button></div>`:tag("Unpaid"))}</td><td>${x.status==="Pending"?`<div class="inl"><button class="g" onclick="decide(${x.id},true)">Approve</button><input id="n${x.id}" placeholder="Reason if rejecting"><button class="d" onclick="decide(${x.id},false)">Reject</button></div>`:tag(x.status)}</td></tr>`).join("")||`<tr><td colspan=5 class="mu">No enrollment requests yet.</td></tr>`}</table></div></div>`}
+ const stat={Pending:0,Approved:0,Rejected:0},counts={};
+ let collected=0;
+ for(const x of e){
+  stat[x.status]++;
+  if(x.paid)collected+=Number(x.fee);
+  if(x.status!=="Rejected")for(const c of codes(x))counts[c]=(counts[c]||0)+1;
+ }
+ const bySub=Object.entries(counts).sort((a,b)=>a[0].localeCompare(b[0]));
+ after=()=>drawCharts(stat,bySub);
+ return `<div class="stats"><div class="stat"><span class="mu">Students</span><b>${st.length}</b></div><div class="stat"><span class="mu">Pending</span><b>${stat.Pending}</b></div><div class="stat"><span class="mu">Unpaid</span><b>${e.filter(x=>!x.paid&&x.status==="Pending").length}</b></div><div class="stat"><span class="mu">Approved</span><b>${stat.Approved}</b></div><div class="stat"><span class="mu">Collected</span><b style="font-size:21px">${peso(collected)}</b></div></div>
+<div class="charts"><div class="card"><h2>Enrollment status</h2><div class="cbox"><canvas id="c1"></canvas></div></div><div class="card"><h2>Enrollments per subject</h2><div class="cbox"><canvas id="c2"></canvas></div></div></div>`}
+async function aEnr(){
+ const e=await allEnr();
+ const rows=e.map(x=>`<tr><td>${esc(x.profiles.full_name)}<div class="mu">#${x.id} · ${esc(x.profiles.student_no)}</div></td><td>${codes(x).join(", ")}</td><td>${peso(x.fee)}</td><td>${x.paid?tag("Paid")+`<div class="mu">OR ${esc(x.or_no)}</div>`:(x.status==="Pending"?`<div class="inl"><input id="or${x.id}" placeholder="OR-0001"><button class="g" onclick="pay(${x.id})">Record</button></div>`:tag("Unpaid"))}</td><td>${x.status==="Pending"?`<div class="inl"><button class="g" onclick="decide(${x.id},true)">Approve</button><input id="n${x.id}" placeholder="Reason if rejecting"><button class="d" onclick="decide(${x.id},false)">Reject</button></div>`:tag(x.status)}</td></tr>`);
+ return `<div class="card"><h2>Enrollment requests</h2><p class="mu">Record the student's payment first, then approve. Approval is blocked until payment is recorded.</p>${table(["Student","Subjects","Fee",["Payment"],["Decision"]],rows,"No enrollment requests yet.",true)}</div>`}
 async function aGr(){
- const[rows,gr]=await Promise.all([q(sb.from("enrollment_items").select("subject_code,enrollments!inner(student_id,status,profiles(full_name,student_no))").eq("enrollments.status","Approved").order("subject_code")),q(sb.from("grades").select("*"))]);
- return `<div class="card"><h2>Post grades</h2><p class="mu">Only officially enrolled (approved) students appear here. Grades go straight to the student portal.</p><div class="tw"><table><tr><th>Subject</th><th>Student</th><th>Grade</th><th></th></tr>${rows.map(x=>{const sid=x.enrollments.student_id,g=gr.find(y=>y.student_id===sid&&y.subject_code===x.subject_code);return `<tr><td>${x.subject_code}</td><td>${esc(x.enrollments.profiles.full_name)}<div class="mu">${esc(x.enrollments.profiles.student_no)}</div></td><td style="width:120px"><input id="g${sid.slice(0,8)}${x.subject_code}" type="number" step="0.25" min="1" max="5" value="${g?g.grade:""}"></td><td><button class="p" onclick="postGrade('${sid}','${x.subject_code}')">Post</button></td></tr>`}).join("")||`<tr><td colspan=4 class="mu">No approved enrollments yet.</td></tr>`}</table></div></div>`}
+ const[items,gr]=await Promise.all([q(sb.from("enrollment_items").select("subject_code,enrollments!inner(student_id,status,profiles(full_name,student_no))").eq("enrollments.status","Approved").order("subject_code")),q(sb.from("grades").select("*"))]);
+ const rows=items.map(x=>{const sid=x.enrollments.student_id,g=gr.find(y=>y.student_id===sid&&y.subject_code===x.subject_code);return `<tr><td>${x.subject_code}</td><td>${esc(x.enrollments.profiles.full_name)}<div class="mu">${esc(x.enrollments.profiles.student_no)}</div></td><td style="width:120px"><input id="g${sid.slice(0,8)}${x.subject_code}" type="number" step="0.25" min="1" max="5" value="${g?g.grade:""}"></td><td><button class="p" onclick="postGrade('${sid}','${x.subject_code}')">Post</button></td></tr>`});
+ return `<div class="card"><h2>Post grades</h2><p class="mu">Only officially enrolled (approved) students appear here. Grades go straight to the student portal.</p>${table(["Subject","Student",["Grade"],[""]],rows,"No approved enrollments yet.",true)}</div>`}
 async function aUs(){
  const us=await q(sb.from("profiles").select("*").order("created_at"));
- return `<div class="card"><h2>User accounts</h2><p class="mu">New users register as Students. Make someone an Admin here.</p><div class="tw"><table><tr><th>Name</th><th>Email</th><th>Role</th><th></th></tr>${us.map(u=>`<tr><td>${esc(u.full_name)}<div class="mu">${esc(u.student_no||"")}</div></td><td>${esc(u.email)}</td><td><select id="ro${u.id}" ${u.id===me.id?"disabled":""}>${["Student","Admin"].map(r=>`<option ${r===u.role?"selected":""}>${r}</option>`).join("")}</select></td><td>${u.id===me.id?`<span class="mu">You</span>`:`<button class="p" onclick="setRole('${u.id}')">Save</button>`}</td></tr>`).join("")}</table></div></div>`}
+ const rows=us.map(u=>`<tr><td>${esc(u.full_name)}<div class="mu">${esc(u.student_no||"")}</div></td><td>${esc(u.email)}</td><td><select id="ro${u.id}" ${u.id===me.id?"disabled":""}>${["Student","Admin"].map(r=>`<option ${r===u.role?"selected":""}>${r}</option>`).join("")}</select></td><td>${u.id===me.id?`<span class="mu">You</span>`:`<button class="p" onclick="setRole('${u.id}')">Save</button>`}</td></tr>`);
+ return `<div class="card"><h2>User accounts</h2><p class="mu">New users register as Students. Make someone an Admin here.</p>${table(["Name","Email",["Role"],[""]],rows,"No users yet.",true)}</div>`}
 async function aSu(){
  const subs=await q(sb.from("subjects").select("*").order("code"));SUBS=subs;
- return `<div class="card"><h2>Subjects</h2><div class="tw"><table><tr><th>Subject</th><th>Units</th><th>Prerequisite</th><th></th></tr>${subs.map(x=>`<tr><td>${x.code} – ${esc(x.title)}</td><td>${x.units}</td><td>${x.prereq||"–"}</td><td><button onclick="fillSub('${x.code}')">Edit</button></td></tr>`).join("")}</table></div></div>
- <div class="card"><h2>Add or edit a subject</h2><div class="row"><div><label>Code</label><input id="sc" placeholder="ITEC206"></div><div><label>Title</label><input id="st"></div><div><label>Units</label><input id="su" type="number" min="1" max="6" value="3"></div><div><label>Prerequisite</label><select id="sp"><option value="">None</option>${subs.map(x=>`<option>${x.code}</option>`).join("")}</select></div></div><p><button class="p" onclick="saveSubject()">Save subject</button> <span class="mu">An existing code updates that subject.</span></p></div>`}
+ const rows=subs.map(x=>`<tr><td>${x.code} – ${esc(x.title)}</td><td>${x.units}</td><td>${x.prereq||"–"}</td><td><button onclick="fillSub('${x.code}')">Edit</button></td></tr>`);
+ return `<div class="card"><h2>Subjects</h2>${table(["Subject","Units","Prerequisite",[""]],rows,"No subjects yet.",true)}</div>
+<div class="card"><h2>Add or edit a subject</h2><div class="row"><div><label>Code</label><input id="sc" placeholder="ITEC206"></div><div><label>Title</label><input id="st"></div><div><label>Units</label><input id="su" type="number" min="1" max="6" value="3"></div><div><label>Prerequisite</label><select id="sp"><option value="">None</option>${subs.map(x=>`<option>${x.code}</option>`).join("")}</select></div></div><p><button class="p" onclick="saveSubject()">Save subject</button> <span class="mu">An existing code updates that subject.</span></p></div>`}
 async function aLg(){
- const lg=await q(sb.from("audit_log").select("*,profiles(full_name)").order("id",{ascending:false}).limit(30));
- return `<div class="card"><h2>Audit log</h2><div class="mu">${lg.map(l=>esc(new Date(l.created_at).toLocaleString()+" · "+(l.profiles?.full_name||"")+" · "+l.action)).join("<br>")||"No activity yet."}</div></div>`}
+ const lg=await q(sb.from("audit_log").select("*,profiles(full_name)").order("id",{ascending:false}).limit(100));
+ const rows=lg.map(l=>`<tr><td>${esc(new Date(l.created_at).toLocaleString())}</td><td>${esc(l.profiles?.full_name||"")}</td><td>${esc(l.action)}</td></tr>`);
+ return `<div class="card"><h2>Audit log</h2>${table(["When","Who","Action"],rows,"No activity yet.",true)}</div>`}
 async function vAdmin(){
- const tabs=[["enr","Enrollments"],["gr","Grades"],["us","Users"],["su","Subjects"],["lg","Audit log"]];
- return `<div class="tabs" style="background:var(--card);border:1px solid var(--bd);flex-wrap:wrap;margin-bottom:18px">${tabs.map(([k,l])=>`<button class="${tab===k?"on":""}" onclick="setTab('${k}')">${l}</button>`).join("")}</div>`+await({enr:aEnr,gr:aGr,us:aUs,su:aSu,lg:aLg}[tab])()}
+ const tabs=[["dash","Dashboard"],["enr","Enrollments"],["gr","Grades"],["us","Users"],["su","Subjects"],["lg","Audit log"]];
+ return `<div class="tabs" style="background:var(--card);border:1px solid var(--bd);flex-wrap:wrap;margin-bottom:18px">${tabs.map(([k,l])=>`<button class="${tab===k?"on":""}" onclick="setTab('${k}')">${l}</button>`).join("")}</div>`+await({dash:aDa,enr:aEnr,gr:aGr,us:aUs,su:aSu,lg:aLg}[tab])()}
+function enhance(){
+ if(!window.jQuery||!jQuery.fn.DataTable)return;
+ jQuery("table.dt").each(function(){jQuery(this).DataTable({pageLength:10,order:[],columnDefs:[{orderable:false,searchable:false,targets:"noso"}]})});
+}
 async function render(){
+ after=null;
  $("#who").textContent=me?me.full_name+" · "+me.role:"";$("#lo").style.display=me?"":"none";
  if(!configured)return void($("#app").innerHTML=vSetup());
  if(!me)return void($("#app").innerHTML=vLogin());
  let h;try{h=greet()+await({Student:vStudent,Admin:vAdmin}[me.role]())}catch(e){h=`<div class="card"><p>Could not load data: ${esc(e.message)}</p></div>`}
- $("#app").innerHTML=h}
+ $("#app").innerHTML=h;
+ enhance();
+ if(after)after();
+}
+(function(){
+ const h=location.hostname;
+ if(!h.endsWith(".github.io"))return;
+ const repo=location.pathname.split("/")[1];
+ const a=el("gh");
+ a.href="https://github.com/"+h.split(".")[0]+(repo?"/"+repo:"");
+ a.hidden=false;
+})();
 (async()=>{if(configured)await loadMe();render()})();
 </script></body></html>
