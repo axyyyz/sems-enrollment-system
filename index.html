@@ -54,23 +54,39 @@ table.dt th.sorting::after{content:" \2195";opacity:.35}table.dt th.sorting_asc:
 .tech{max-width:760px;margin:0 auto 10px;text-align:left}.tech summary{cursor:pointer;text-align:center;font-weight:600;color:var(--ac)}.tech ul{margin:10px 0 0;padding-left:20px;line-height:1.8}
 main.wide{max-width:1280px}
 .shell{display:grid;grid-template-columns:240px minmax(0,1fr);gap:22px;align-items:start}
-.side{position:sticky;top:84px;background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:12px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:4px}
-.sidehd{display:flex;gap:12px;align-items:center;padding:6px 8px 14px;margin-bottom:6px;border-bottom:1px solid var(--bd)}.sidehd b{display:block;font-size:14px;line-height:1.2}.sidehd small{color:var(--mu);font-size:12px}
-.side button{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;text-align:left;padding:11px 12px;border-radius:10px;color:var(--mu);font-weight:600}
-.side button:hover{background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--tx);transform:none}
-.side button.on{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;box-shadow:0 4px 12px rgba(91,76,230,.3)}
+.side{position:sticky;top:84px;background:linear-gradient(180deg,#171c44,#0e1230);border-radius:var(--r);padding:14px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:3px;color:#fff}
+.sidehd{display:flex;gap:12px;align-items:center;padding:4px 6px 14px;margin-bottom:4px;border-bottom:1px solid rgba(255,255,255,.12)}.sidehd b{display:block;font-size:14px;line-height:1.2;color:#fff}.sidehd small{color:rgba(255,255,255,.6);font-size:12px}
+.sl{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4);font-weight:700;padding:12px 12px 4px}
+.side button{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;text-align:left;padding:10px 12px;border-radius:10px;color:rgba(255,255,255,.68);font-weight:600}
+.side button:hover{background:rgba(255,255,255,.08);color:#fff;transform:none}
+.side button.on{background:linear-gradient(135deg,#5b4ce6,#8f6bff);color:#fff;box-shadow:0 6px 16px rgba(91,76,230,.45)}
+.bdg{margin-left:auto;font-style:normal;font-size:11px;font-weight:700;background:#f59e0b;color:#1b1300;border-radius:99px;padding:1px 8px}
 .pt{display:flex;align-items:center;gap:14px}.pt h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
 .pti{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:color-mix(in srgb,var(--ac) 12%,transparent);color:var(--ac)}
 .crumb{display:inline-block;background:var(--card);border:1px solid var(--bd);border-radius:99px;padding:4px 14px;font-size:12.5px;color:var(--mu);margin:12px 0 20px}
+.banner{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between;border-radius:20px;padding:26px 30px;margin-bottom:18px;color:#fff;background:linear-gradient(120deg,#2a2f9e 0%,#5b4ce6 55%,#8f6bff 100%)}
+.banner::before{content:"";position:absolute;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.08);right:-60px;top:-110px}
+.banner>*{position:relative}.banner h2{margin:6px 0 4px;font-size:26px;font-weight:800;letter-spacing:-.02em;color:#fff}.banner p{margin:0;opacity:.92;max-width:520px}
+.bd{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+.bb{display:flex;gap:10px;flex-wrap:wrap}.banner button{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);color:#fff;font-weight:600}.banner button:hover{border-color:#fff}.banner button.solid{background:#fff;color:#3b3fc0;border-color:#fff}
 .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:18px}
-.sc{--c:var(--ac);background:var(--card);border:1px solid var(--bd);border-top:3px solid var(--c);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.sc{--c:var(--ac);background:var(--card);border:1px solid var(--bd);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
 .sc.w{--c:var(--wn)}.sc.o{--c:var(--ok)}.sc.b{--c:var(--bad)}.sc.v{--c:var(--ac2)}
 .sct{display:flex;align-items:center;gap:14px;padding:18px}
-.sci{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c)}
-.sct b{display:block;font-size:26px;line-height:1.1;font-weight:800}.sct .l{color:var(--mu);font-size:13px}
+.rw{position:relative;width:54px;height:54px;flex:none}.rg{position:absolute;inset:0;width:54px;height:54px;transform:rotate(-90deg)}
+.rb{fill:none;stroke:color-mix(in srgb,var(--c) 16%,transparent);stroke-width:5}.rf{fill:none;stroke:var(--c);stroke-width:5;stroke-linecap:round}
+.ci{position:absolute;inset:0;display:grid;place-items:center;color:var(--c)}
+.sct b{display:block;font-size:26px;line-height:1.1;font-weight:800}.sct .l{display:block;color:var(--tx);font-size:13px;font-weight:600}.sct .cap{display:block;color:var(--mu);font-size:11.5px}
 .sc>button{width:100%;border:0;border-top:1px solid var(--bd);border-radius:0;background:color-mix(in srgb,var(--c) 6%,transparent);color:var(--c);display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;padding:10px 18px}
 .sc>button:hover{transform:none;background:color-mix(in srgb,var(--c) 13%,transparent)}
-@media (max-width:860px){.shell{grid-template-columns:1fr}.side{position:static;flex-direction:row;overflow-x:auto}.sidehd{display:none}.side button{width:auto;white-space:nowrap}}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;color:#fff;background:linear-gradient(135deg,var(--ac),var(--ac2));flex:none;font-style:normal}
+.qi{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd)}.qi:last-child{border-bottom:0}.qm{flex:1;min-width:0}.qm b{display:block;font-size:14px}.qm .mu{font-size:12.5px}
+.who{display:flex;align-items:center;gap:12px}
+.tl{position:relative;padding-left:6px}.tl::before{content:"";position:absolute;left:11px;top:8px;bottom:8px;width:2px;background:var(--bd)}
+.ti{position:relative;display:flex;gap:14px;padding:8px 0}.ti i{width:12px;height:12px;border-radius:50%;background:var(--ac);border:3px solid var(--card);box-shadow:0 0 0 2px var(--ac);margin-top:5px;flex:none;position:relative;z-index:1}
+.ti b{display:block;font-size:13.5px;font-weight:600}.ti .mu{font-size:12px}
+@media (max-width:860px){.shell{grid-template-columns:1fr}.side{position:static;flex-direction:row;overflow-x:auto;align-items:center}.sidehd,.sl{display:none}.side button{width:auto;white-space:nowrap}}
 footer a{color:var(--ac);text-decoration:none;font-weight:600}
 </style></head><body>
 <header><div class="brand"><i class="lg">S</i><div><b>SEMS</b><small>Student Enrollment and Records</small></div></div><div class="sp"></div><span id="who" class="pill"></span><button id="lo" onclick="logout()" style="display:none">Log out</button></header>
@@ -115,6 +131,9 @@ ok:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/
 arrow:'<path d="M5 12h14M12 5l7 7"/>'};
 const ic=(k,s)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[k]}</svg>`;
 const TITLES={dash:["Dashboard","Overview of the whole system"],enr:["Enrollments","Requests and payments"],gr:["Grades","Post grades for enrolled students"],us:["Users","Accounts and roles"],su:["Subjects","Subject list and prerequisites"],lg:["Audit log","Recent system activity"]};
+const ago=d=>{const m=Math.floor((Date.now()-new Date(d))/60000);if(m<1)return "just now";if(m<60)return m+" min ago";if(m<1440)return Math.floor(m/60)+" hr ago";const n=Math.floor(m/1440);return n+(n>1?" days ago":" day ago")};
+const ring=(pct,icon)=>`<div class="rw"><svg class="rg" viewBox="0 0 54 54"><circle class="rb" cx="27" cy="27" r="22"/><circle class="rf" cx="27" cy="27" r="22" stroke-dasharray="${(Math.max(0,Math.min(100,pct))*1.3823).toFixed(1)} 138.23"/></svg><span class="ci">${ic(icon,20)}</span></div>`;
+const avatar=n=>`<span class="av">${esc((n||"?").trim().charAt(0).toUpperCase())}</span>`;
 const codes=e=>(e.enrollment_items||[]).map(i=>i.subject_code);
 const table=(heads,rows,empty,sortable)=>{
  if(!rows.length)return `<p class="mu">${empty}</p>`;
@@ -197,20 +216,30 @@ function drawCharts(stat,bySub){
  charts.push(new Chart(el("c2"),{type:"bar",data:{labels:bySub.map(x=>x[0]),datasets:[{label:"Students enrolled",data:bySub.map(x=>x[1]),backgroundColor:cv("--ac"),borderRadius:6}]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tx},grid:{color:bd}},y:{beginAtZero:true,ticks:{color:tx,precision:0},grid:{color:bd}}}}}));
 }
 async function aDa(){
- const[e,st]=await Promise.all([allEnr(),q(sb.from("profiles").select("*").eq("role","Student").order("created_at",{ascending:false}))]);
- const stat={Pending:0,Approved:0,Rejected:0},counts={};
- let collected=0;
+ const[e,st,lg]=await Promise.all([allEnr(),q(sb.from("profiles").select("*").eq("role","Student").order("created_at",{ascending:false})),q(sb.from("audit_log").select("*,profiles(full_name)").order("id",{ascending:false}).limit(6))]);
+ const stat={Pending:0,Approved:0,Rejected:0},counts={},enrolled=new Set();
+ let collected=0,paidCount=0;
  for(const x of e){
   stat[x.status]++;
-  if(x.paid)collected+=Number(x.fee);
-  if(x.status!=="Rejected")for(const c of codes(x))counts[c]=(counts[c]||0)+1;
+  if(x.paid){collected+=Number(x.fee);paidCount++}
+  if(x.status!=="Rejected"){enrolled.add(x.student_id);for(const c of codes(x))counts[c]=(counts[c]||0)+1}
  }
- const unpaid=e.filter(x=>!x.paid&&x.status==="Pending").length;
+ const total=e.length||1,pending=e.filter(x=>x.status==="Pending"),unpaid=pending.filter(x=>!x.paid).length;
  const bySub=Object.entries(counts).sort((a,b)=>a[0].localeCompare(b[0]));
  after=()=>drawCharts(stat,bySub);
- const card=(cls,icon,label,val,to,small)=>`<div class="sc ${cls}"><div class="sct"><span class="sci">${ic(icon,24)}</span><div><b${small?` style="font-size:21px"`:""}>${val}</b><span class="l">${label}</span></div></div><button onclick="setTab('${to}')"><span>View details</span>${ic("arrow",14)}</button></div>`;
- const rows=st.map((u,i)=>`<tr><td>${i+1}</td><td>${esc(u.full_name)}<div class="mu">${esc(u.email)}</div></td><td>${esc(u.student_no||"")}</td><td>${esc(u.program)}</td><td data-order="${esc(u.created_at)}">${esc(new Date(u.created_at).toLocaleDateString())}</td></tr>`);
- return `<div class="sgrid">${card("","us","Total students",st.length,"us")}${card("w","enr","Pending requests",stat.Pending,"enr")}${card("b","warn","Awaiting payment",unpaid,"enr")}${card("o","ok","Approved enrollments",stat.Approved,"gr")}${card("v","cash","Total collected",peso(collected),"enr",1)}</div>
+ const hr=new Date().getHours(),greeting=hr<12?"Good morning":hr<18?"Good afternoon":"Good evening";
+ const today=new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+ const msg=pending.length?`${pending.length} enrollment request${pending.length>1?"s are":" is"} waiting for you, and ${unpaid} still need${unpaid===1?"s":""} a payment record.`:"You are all caught up. There are no pending enrollment requests.";
+ const banner=`<div class="banner"><div><span class="bd">${today}</span><h2>${greeting}, ${esc(me.full_name.split(" ")[0]||"Admin")}</h2><p>${msg}</p></div><div class="bb"><button onclick="setTab('enr')">Review requests</button><button class="solid" onclick="setTab('gr')">Post grades</button></div></div>`;
+ const card=(cls,icon,label,val,to,pct,cap,small)=>`<div class="sc ${cls}"><div class="sct">${ring(pct,icon)}<div><b${small?` style="font-size:21px"`:""}>${val}</b><span class="l">${label}</span><span class="cap">${cap}</span></div></div><button onclick="setTab('${to}')"><span>View details</span>${ic("arrow",14)}</button></div>`;
+ const pc=n=>Math.round(n/total*100);
+ const stuPct=st.length?Math.round(enrolled.size/st.length*100):0;
+ const cards=card("","us","Total students",st.length,"us",stuPct,stuPct+"% have enrolled")+card("w","enr","Pending requests",stat.Pending,"enr",pc(stat.Pending),pc(stat.Pending)+"% of all requests")+card("b","warn","Awaiting payment",unpaid,"enr",pc(unpaid),pc(unpaid)+"% of all requests")+card("o","ok","Approved",stat.Approved,"gr",pc(stat.Approved),pc(stat.Approved)+"% of all requests")+card("v","cash","Total collected",peso(collected),"enr",pc(paidCount),pc(paidCount)+"% of requests paid",1);
+ const queue=pending.length?pending.slice(0,5).map(x=>`<div class="qi">${avatar(x.profiles.full_name)}<div class="qm"><b>${esc(x.profiles.full_name)}</b><span class="mu">${codes(x).join(", ")} · ${peso(x.fee)}</span></div>${tag(x.paid?"Paid":"Unpaid")}<button onclick="setTab('enr')">Review</button></div>`).join(""):`<p class="mu">Nothing to review right now.</p>`;
+ const feed=lg.length?lg.map(l=>`<div class="ti"><i></i><div><b>${esc(l.action)}</b><span class="mu">${esc(l.profiles?.full_name||"System")} · ${ago(l.created_at)}</span></div></div>`).join(""):`<p class="mu">No activity yet.</p>`;
+ const rows=st.map((u,i)=>`<tr><td>${i+1}</td><td><div class="who">${avatar(u.full_name)}<div>${esc(u.full_name)}<div class="mu">${esc(u.email)}</div></div></div></td><td>${esc(u.student_no||"")}</td><td>${esc(u.program)}</td><td data-order="${esc(u.created_at)}">${esc(new Date(u.created_at).toLocaleDateString())}</td></tr>`);
+ return `${banner}<div class="sgrid">${cards}</div>
+<div class="two"><div class="card"><h2>Needs your attention</h2>${queue}</div><div class="card"><h2>Recent activity</h2><div class="tl">${feed}</div></div></div>
 <div class="charts"><div class="card"><h2>Enrollment status</h2><div class="cbox"><canvas id="c1"></canvas></div></div><div class="card"><h2>Enrollments per subject</h2><div class="cbox"><canvas id="c2"></canvas></div></div></div>
 <div class="card"><h2>Newest students</h2>${table(["#","Student","Student ID","Program","Registered"],rows,"No students have registered yet.",true)}</div>`}
 async function aEnr(){
@@ -235,10 +264,11 @@ async function aLg(){
  const rows=lg.map(l=>`<tr><td>${esc(new Date(l.created_at).toLocaleString())}</td><td>${esc(l.profiles?.full_name||"")}</td><td>${esc(l.action)}</td></tr>`);
  return `<div class="card"><h2>Audit log</h2>${table(["When","Who","Action"],rows,"No activity yet.",true)}</div>`}
 async function vAdmin(){
- const nav=[["dash","Dashboard"],["enr","Enrollments"],["gr","Grades"],["us","Users"],["su","Subjects"],["lg","Audit log"]];
- const t=TITLES[tab],body=await({dash:aDa,enr:aEnr,gr:aGr,us:aUs,su:aSu,lg:aLg}[tab])();
- const buttons=nav.map(([k,l])=>`<button class="${tab===k?"on":""}" onclick="setTab('${k}')">${ic(k,18)}<span>${l}</span></button>`).join("");
- return `<div class="shell"><aside class="side"><div class="sidehd"><i class="lg">${esc((me.full_name||"A").charAt(0).toUpperCase())}</i><div><b>${esc(me.full_name)}</b><small>Administrator</small></div></div>${buttons}</aside><section class="pane"><div class="pt"><span class="pti">${ic(tab,24)}</span><div><h1>${t[0]}</h1><span class="mu">${t[1]}</span></div></div><div class="crumb">Admin / ${t[0]}</div>${body}</section></div>`}
+ const groups=[["Main",[["dash","Dashboard"]]],["Manage",[["enr","Enrollments"],["gr","Grades"]]],["Setup",[["us","Users"],["su","Subjects"],["lg","Audit log"]]]];
+ const t=TITLES[tab];
+ const[body,pend]=await Promise.all([{dash:aDa,enr:aEnr,gr:aGr,us:aUs,su:aSu,lg:aLg}[tab](),q(sb.from("enrollments").select("id").eq("status","Pending"))]);
+ const nav=groups.map(([g,items])=>`<div class="sl">${g}</div>`+items.map(([k,l])=>`<button class="${tab===k?"on":""}" onclick="setTab('${k}')">${ic(k,18)}<span>${l}</span>${k==="enr"&&pend.length?`<em class="bdg">${pend.length}</em>`:""}</button>`).join("")).join("");
+ return `<div class="shell"><aside class="side"><div class="sidehd"><i class="lg">${esc((me.full_name||"A").charAt(0).toUpperCase())}</i><div><b>${esc(me.full_name)}</b><small>Administrator</small></div></div>${nav}</aside><section class="pane"><div class="pt"><span class="pti">${ic(tab,24)}</span><div><h1>${t[0]}</h1><span class="mu">${t[1]}</span></div></div><div class="crumb">Admin / ${t[0]}</div>${body}</section></div>`}
 function enhance(){
  if(!window.jQuery||!jQuery.fn.DataTable)return;
  jQuery("table.dt").each(function(){jQuery(this).DataTable({pageLength:10,order:[],columnDefs:[{orderable:false,searchable:false,targets:"noso"}]})});
