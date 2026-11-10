@@ -52,6 +52,25 @@ label{display:block;font-size:13px;font-weight:600;color:var(--tx);margin:12px 0
 table.dt th.sorting,table.dt th.sorting_asc,table.dt th.sorting_desc{cursor:pointer;user-select:none}
 table.dt th.sorting::after{content:" \2195";opacity:.35}table.dt th.sorting_asc::after{content:" \2191";color:var(--ac)}table.dt th.sorting_desc::after{content:" \2193";color:var(--ac)}
 .tech{max-width:760px;margin:0 auto 10px;text-align:left}.tech summary{cursor:pointer;text-align:center;font-weight:600;color:var(--ac)}.tech ul{margin:10px 0 0;padding-left:20px;line-height:1.8}
+main.wide{max-width:1280px}
+.shell{display:grid;grid-template-columns:240px minmax(0,1fr);gap:22px;align-items:start}
+.side{position:sticky;top:84px;background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:12px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:4px}
+.sidehd{display:flex;gap:12px;align-items:center;padding:6px 8px 14px;margin-bottom:6px;border-bottom:1px solid var(--bd)}.sidehd b{display:block;font-size:14px;line-height:1.2}.sidehd small{color:var(--mu);font-size:12px}
+.side button{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;text-align:left;padding:11px 12px;border-radius:10px;color:var(--mu);font-weight:600}
+.side button:hover{background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--tx);transform:none}
+.side button.on{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;box-shadow:0 4px 12px rgba(91,76,230,.3)}
+.pt{display:flex;align-items:center;gap:14px}.pt h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.pti{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:color-mix(in srgb,var(--ac) 12%,transparent);color:var(--ac)}
+.crumb{display:inline-block;background:var(--card);border:1px solid var(--bd);border-radius:99px;padding:4px 14px;font-size:12.5px;color:var(--mu);margin:12px 0 20px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:18px}
+.sc{--c:var(--ac);background:var(--card);border:1px solid var(--bd);border-top:3px solid var(--c);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.sc.w{--c:var(--wn)}.sc.o{--c:var(--ok)}.sc.b{--c:var(--bad)}.sc.v{--c:var(--ac2)}
+.sct{display:flex;align-items:center;gap:14px;padding:18px}
+.sci{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c)}
+.sct b{display:block;font-size:26px;line-height:1.1;font-weight:800}.sct .l{color:var(--mu);font-size:13px}
+.sc>button{width:100%;border:0;border-top:1px solid var(--bd);border-radius:0;background:color-mix(in srgb,var(--c) 6%,transparent);color:var(--c);display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;padding:10px 18px}
+.sc>button:hover{transform:none;background:color-mix(in srgb,var(--c) 13%,transparent)}
+@media (max-width:860px){.shell{grid-template-columns:1fr}.side{position:static;flex-direction:row;overflow-x:auto}.sidehd{display:none}.side button{width:auto;white-space:nowrap}}
 footer a{color:var(--ac);text-decoration:none;font-weight:600}
 </style></head><body>
 <header><div class="brand"><i class="lg">S</i><div><b>SEMS</b><small>Student Enrollment and Records</small></div></div><div class="sp"></div><span id="who" class="pill"></span><button id="lo" onclick="logout()" style="display:none">Log out</button></header>
@@ -83,6 +102,19 @@ const tag=s=>`<span class="tag ${s}">${s}</span>`;
 const q=async p=>{const{data,error}=await p;if(error)throw error;return data};
 const call=async(p,ok)=>{const{error}=await p;if(error)toast(error.message,1);else toast(ok);await render()};
 let me=null,mode="in",SUBS=[],tab="dash",after=null,charts=[],SLIP=null;
+const I={
+dash:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+enr:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>',
+gr:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+us:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+su:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+lg:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+cash:'<path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+warn:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>',
+ok:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/>',
+arrow:'<path d="M5 12h14M12 5l7 7"/>'};
+const ic=(k,s)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[k]}</svg>`;
+const TITLES={dash:["Dashboard","Overview of the whole system"],enr:["Enrollments","Requests and payments"],gr:["Grades","Post grades for enrolled students"],us:["Users","Accounts and roles"],su:["Subjects","Subject list and prerequisites"],lg:["Audit log","Recent system activity"]};
 const codes=e=>(e.enrollment_items||[]).map(i=>i.subject_code);
 const table=(heads,rows,empty,sortable)=>{
  if(!rows.length)return `<p class="mu">${empty}</p>`;
@@ -165,7 +197,7 @@ function drawCharts(stat,bySub){
  charts.push(new Chart(el("c2"),{type:"bar",data:{labels:bySub.map(x=>x[0]),datasets:[{label:"Students enrolled",data:bySub.map(x=>x[1]),backgroundColor:cv("--ac"),borderRadius:6}]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tx},grid:{color:bd}},y:{beginAtZero:true,ticks:{color:tx,precision:0},grid:{color:bd}}}}}));
 }
 async function aDa(){
- const[e,st]=await Promise.all([allEnr(),q(sb.from("profiles").select("id").eq("role","Student"))]);
+ const[e,st]=await Promise.all([allEnr(),q(sb.from("profiles").select("*").eq("role","Student").order("created_at",{ascending:false}))]);
  const stat={Pending:0,Approved:0,Rejected:0},counts={};
  let collected=0;
  for(const x of e){
@@ -173,10 +205,14 @@ async function aDa(){
   if(x.paid)collected+=Number(x.fee);
   if(x.status!=="Rejected")for(const c of codes(x))counts[c]=(counts[c]||0)+1;
  }
+ const unpaid=e.filter(x=>!x.paid&&x.status==="Pending").length;
  const bySub=Object.entries(counts).sort((a,b)=>a[0].localeCompare(b[0]));
  after=()=>drawCharts(stat,bySub);
- return `<div class="stats"><div class="stat"><span class="mu">Students</span><b>${st.length}</b></div><div class="stat"><span class="mu">Pending</span><b>${stat.Pending}</b></div><div class="stat"><span class="mu">Unpaid</span><b>${e.filter(x=>!x.paid&&x.status==="Pending").length}</b></div><div class="stat"><span class="mu">Approved</span><b>${stat.Approved}</b></div><div class="stat"><span class="mu">Collected</span><b style="font-size:21px">${peso(collected)}</b></div></div>
-<div class="charts"><div class="card"><h2>Enrollment status</h2><div class="cbox"><canvas id="c1"></canvas></div></div><div class="card"><h2>Enrollments per subject</h2><div class="cbox"><canvas id="c2"></canvas></div></div></div>`}
+ const card=(cls,icon,label,val,to,small)=>`<div class="sc ${cls}"><div class="sct"><span class="sci">${ic(icon,24)}</span><div><b${small?` style="font-size:21px"`:""}>${val}</b><span class="l">${label}</span></div></div><button onclick="setTab('${to}')"><span>View details</span>${ic("arrow",14)}</button></div>`;
+ const rows=st.map((u,i)=>`<tr><td>${i+1}</td><td>${esc(u.full_name)}<div class="mu">${esc(u.email)}</div></td><td>${esc(u.student_no||"")}</td><td>${esc(u.program)}</td><td data-order="${esc(u.created_at)}">${esc(new Date(u.created_at).toLocaleDateString())}</td></tr>`);
+ return `<div class="sgrid">${card("","us","Total students",st.length,"us")}${card("w","enr","Pending requests",stat.Pending,"enr")}${card("b","warn","Awaiting payment",unpaid,"enr")}${card("o","ok","Approved enrollments",stat.Approved,"gr")}${card("v","cash","Total collected",peso(collected),"enr",1)}</div>
+<div class="charts"><div class="card"><h2>Enrollment status</h2><div class="cbox"><canvas id="c1"></canvas></div></div><div class="card"><h2>Enrollments per subject</h2><div class="cbox"><canvas id="c2"></canvas></div></div></div>
+<div class="card"><h2>Newest students</h2>${table(["#","Student","Student ID","Program","Registered"],rows,"No students have registered yet.",true)}</div>`}
 async function aEnr(){
  const e=await allEnr();
  const rows=e.map(x=>`<tr><td>${esc(x.profiles.full_name)}<div class="mu">#${x.id} · ${esc(x.profiles.student_no)}</div></td><td>${codes(x).join(", ")}</td><td>${peso(x.fee)}</td><td>${x.paid?tag("Paid")+`<div class="mu">OR ${esc(x.or_no)}</div>`:(x.status==="Pending"?`<div class="inl"><input id="or${x.id}" placeholder="OR-0001"><button class="g" onclick="pay(${x.id})">Record</button></div>`:tag("Unpaid"))}</td><td>${x.status==="Pending"?`<div class="inl"><button class="g" onclick="decide(${x.id},true)">Approve</button><input id="n${x.id}" placeholder="Reason if rejecting"><button class="d" onclick="decide(${x.id},false)">Reject</button></div>`:tag(x.status)}</td></tr>`);
@@ -199,18 +235,21 @@ async function aLg(){
  const rows=lg.map(l=>`<tr><td>${esc(new Date(l.created_at).toLocaleString())}</td><td>${esc(l.profiles?.full_name||"")}</td><td>${esc(l.action)}</td></tr>`);
  return `<div class="card"><h2>Audit log</h2>${table(["When","Who","Action"],rows,"No activity yet.",true)}</div>`}
 async function vAdmin(){
- const tabs=[["dash","Dashboard"],["enr","Enrollments"],["gr","Grades"],["us","Users"],["su","Subjects"],["lg","Audit log"]];
- return `<div class="tabs" style="background:var(--card);border:1px solid var(--bd);flex-wrap:wrap;margin-bottom:18px">${tabs.map(([k,l])=>`<button class="${tab===k?"on":""}" onclick="setTab('${k}')">${l}</button>`).join("")}</div>`+await({dash:aDa,enr:aEnr,gr:aGr,us:aUs,su:aSu,lg:aLg}[tab])()}
+ const nav=[["dash","Dashboard"],["enr","Enrollments"],["gr","Grades"],["us","Users"],["su","Subjects"],["lg","Audit log"]];
+ const t=TITLES[tab],body=await({dash:aDa,enr:aEnr,gr:aGr,us:aUs,su:aSu,lg:aLg}[tab])();
+ const buttons=nav.map(([k,l])=>`<button class="${tab===k?"on":""}" onclick="setTab('${k}')">${ic(k,18)}<span>${l}</span></button>`).join("");
+ return `<div class="shell"><aside class="side"><div class="sidehd"><i class="lg">${esc((me.full_name||"A").charAt(0).toUpperCase())}</i><div><b>${esc(me.full_name)}</b><small>Administrator</small></div></div>${buttons}</aside><section class="pane"><div class="pt"><span class="pti">${ic(tab,24)}</span><div><h1>${t[0]}</h1><span class="mu">${t[1]}</span></div></div><div class="crumb">Admin / ${t[0]}</div>${body}</section></div>`}
 function enhance(){
  if(!window.jQuery||!jQuery.fn.DataTable)return;
  jQuery("table.dt").each(function(){jQuery(this).DataTable({pageLength:10,order:[],columnDefs:[{orderable:false,searchable:false,targets:"noso"}]})});
 }
 async function render(){
  after=null;
+ $("#app").className=me&&me.role==="Admin"?"wide":"";
  $("#who").textContent=me?me.full_name+" · "+me.role:"";$("#lo").style.display=me?"":"none";
  if(!configured)return void($("#app").innerHTML=vSetup());
  if(!me)return void($("#app").innerHTML=vLogin());
- let h;try{h=greet()+await({Student:vStudent,Admin:vAdmin}[me.role]())}catch(e){h=`<div class="card"><p>Could not load data: ${esc(e.message)}</p></div>`}
+ let h;try{h=(me.role==="Admin"?"":greet())+await({Student:vStudent,Admin:vAdmin}[me.role]())}catch(e){h=`<div class="card"><p>Could not load data: ${esc(e.message)}</p></div>`}
  $("#app").innerHTML=h;
  enhance();
  if(after)after();
