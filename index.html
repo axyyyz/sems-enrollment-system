@@ -1,373 +1,1779 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
-<title>SEMS – Student Information and Enrollment Management System</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#eef4f8;--card:#ffffff;--tx:#0f1f2e;--mu:#566879;--bd:#dae5ed;--ac:#0e7490;--ac2:#0284c7;--on:#ffffff;--ok:#128a4a;--wn:#b45309;--bad:#c42b2b;--sh:0 1px 2px rgba(20,27,45,.05),0 8px 24px rgba(20,27,45,.07);--r:16px;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#08131c;--card:#0f1f2b;--tx:#e8f1f7;--mu:#93a7b8;--bd:#1f3445;--ac:#38bdf8;--ac2:#22d3ee;--on:#04202c;--ok:#4ade80;--wn:#fbbf24;--bad:#f87171;--sh:0 1px 2px rgba(0,0,0,.5);color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#08131c;--card:#0f1f2b;--tx:#e8f1f7;--mu:#93a7b8;--bd:#1f3445;--ac:#38bdf8;--ac2:#22d3ee;--on:#04202c;--ok:#4ade80;--wn:#fbbf24;--bad:#f87171;--sh:0 1px 2px rgba(0,0,0,.5);color-scheme:dark}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.6 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
-header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:12px 24px;display:flex;gap:14px;align-items:center}
-.brand{display:flex;gap:12px;align-items:center}.brand b{display:block;font-size:17px;line-height:1.1;letter-spacing:.02em;font-weight:800}.brand small{color:var(--mu);font-size:12px}
-.lg{font-style:normal;width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;display:grid;place-items:center;font-weight:800;box-shadow:0 4px 12px rgba(14,116,144,.35)}
-.sp{flex:1}.pill{background:color-mix(in srgb,var(--ac) 10%,transparent);color:var(--ac);border-radius:99px;padding:5px 14px;font-size:13px;font-weight:600}.pill:empty{display:none}
-main{flex:1;width:100%;max-width:1040px;margin:0 auto;padding:28px 18px 40px}
-footer{text-align:center;color:var(--mu);font-size:12.5px;padding:18px;border-top:1px solid var(--bd)}
-.hd{margin:2px 0 22px}.hd h1{margin:0 0 2px;font-size:28px;font-weight:800;letter-spacing:-.02em}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:22px;margin-bottom:18px;box-shadow:var(--sh)}
-h2{margin:0 0 14px;font-size:17px;font-weight:700}
-button{font:inherit;font-size:14px;font-weight:500;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:9px 16px;cursor:pointer;transition:all .15s}button:hover{border-color:var(--ac);transform:translateY(-1px)}
-button.p{background:linear-gradient(135deg,var(--ac),var(--ac2));border-color:transparent;color:#fff;font-weight:600;box-shadow:0 4px 12px rgba(14,116,144,.3)}button.g{background:var(--ok);border-color:var(--ok);color:#fff}button.d{color:var(--bad)}button:disabled{opacity:.45;cursor:not-allowed}button.w{width:100%;padding:12px;margin-top:6px}
-input,select{font:inherit;border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:10px;padding:10px 12px;width:100%;transition:border-color .15s}input:focus,select:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 20%,transparent)}
-label{display:block;font-size:13px;font-weight:600;color:var(--tx);margin:12px 0 5px}
-.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0 14px}
-.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--bd);vertical-align:middle}th{color:var(--mu);font-weight:600;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;background:var(--bg)}th:first-child{border-radius:8px 0 0 8px}th:last-child{border-radius:0 8px 8px 0}tr:last-child td{border-bottom:0}tbody tr:hover td,table tr:not(:first-child):hover td{background:color-mix(in srgb,var(--ac) 4%,transparent)}
-.tag{display:inline-block;padding:3px 11px;border-radius:99px;font-size:12px;font-weight:600;background:color-mix(in srgb,currentColor 13%,transparent)}.Pending{color:var(--wn)}.Approved,.Paid,.Passed{color:var(--ok)}.Rejected,.Unpaid,.Failed{color:var(--bad)}
-.chk{display:flex;gap:12px;align-items:flex-start;padding:12px 4px;border-bottom:1px solid var(--bd);color:var(--tx);font-size:14px;margin:0;font-weight:400;cursor:pointer}.chk:hover{background:color-mix(in srgb,var(--ac) 4%,transparent)}.chk input{width:auto;margin-top:4px;accent-color:var(--ac)}.chk.off{opacity:.5;cursor:not-allowed}
-.mu{color:var(--mu);font-size:13px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}.stat{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh);border-left:4px solid var(--ac)}.stat b{font-size:26px;display:block;line-height:1.3;font-weight:800}
-.auth{display:grid;grid-template-columns:1.15fr 1fr;gap:20px;align-items:stretch;margin-top:12px}
-.hero{position:relative;overflow:hidden;border-radius:20px;padding:44px 40px;color:#fff;background:linear-gradient(135deg,#0b3b52 0%,#0e7490 55%,#0ea5c9 100%);display:flex;flex-direction:column;justify-content:center;min-height:460px}
-.hero::before,.hero::after{content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.08)}.hero::before{width:320px;height:320px;right:-90px;top:-90px}.hero::after{width:220px;height:220px;left:-60px;bottom:-70px}
-.hero>*{position:relative}.hero h1{margin:18px 0 10px;font-size:38px;line-height:1.1;font-weight:800;letter-spacing:-.02em}.hero p{opacity:.92;margin:0 0 22px;font-size:16px;max-width:380px}.hero .lg{background:rgba(255,255,255,.2);box-shadow:none;width:46px;height:46px;font-size:20px}
-.chips{display:flex;flex-wrap:wrap;gap:8px}.chips span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:6px 14px;border-radius:99px;font-size:13px;font-weight:500}
-.form{margin:0;padding:26px}.tabs{display:flex;background:var(--bg);border-radius:12px;padding:5px;margin-bottom:10px}.tabs button{flex:1;border:0;background:none;padding:10px}.tabs button:hover{transform:none}.tabs button.on{background:var(--card);box-shadow:var(--sh);font-weight:700;color:var(--ac)}
-.demo{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-#t{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:12px 20px;border-radius:12px;opacity:0;pointer-events:none;transition:.2s;max-width:90%;z-index:9;box-shadow:var(--sh);font-weight:500}#t.show{opacity:1}#t.bad{background:var(--bad);color:#fff}
-.inl{display:flex;gap:6px;flex-wrap:wrap}.inl input{min-width:100px;flex:1}
-@media (max-width:760px){.auth{grid-template-columns:1fr}.hero{padding:28px 24px;min-height:0}.hero h1{font-size:28px}header{padding:10px 14px}.brand small{display:none}.hd h1{font-size:23px}}
+<html lang="en">
 
-.cbox{position:relative;height:280px}.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
-.dataTables_wrapper::after{content:"";display:block;clear:both}
-.dataTables_wrapper table.dt{clear:both;margin:8px 0}
-.dataTables_length{float:left;margin-bottom:10px}.dataTables_filter{float:right;margin-bottom:10px}
-.dataTables_length label,.dataTables_filter label{margin:0;display:flex;align-items:center;gap:8px;font-weight:500;color:var(--mu)}
-.dataTables_length select{width:auto;padding:6px 8px}.dataTables_filter input{width:200px;padding:7px 10px}
-.dataTables_info{float:left;margin-top:12px;color:var(--mu);font-size:13px}.dataTables_paginate{float:right;margin-top:8px}
-.paginate_button{display:inline-block;padding:5px 12px;margin-left:4px;border:1px solid var(--bd);border-radius:8px;cursor:pointer;font-size:13px}
-.paginate_button:hover{border-color:var(--ac)}.paginate_button.current{background:var(--ac);border-color:var(--ac);color:var(--card);font-weight:600}.paginate_button.disabled{opacity:.4;cursor:default;pointer-events:none}
-table.dt th.sorting,table.dt th.sorting_asc,table.dt th.sorting_desc{cursor:pointer;user-select:none}
-table.dt th.sorting::after{content:" \2195";opacity:.35}table.dt th.sorting_asc::after{content:" \2191";color:var(--ac)}table.dt th.sorting_desc::after{content:" \2193";color:var(--ac)}
-.tech{max-width:760px;margin:0 auto 10px;text-align:left}.tech summary{cursor:pointer;text-align:center;font-weight:600;color:var(--ac)}.tech ul{margin:10px 0 0;padding-left:20px;line-height:1.8}
-main.wide{max-width:1280px}
-.shell{display:grid;grid-template-columns:240px minmax(0,1fr);gap:22px;align-items:start}
-.side{position:sticky;top:84px;background:linear-gradient(180deg,#0c2c3c,#071b27);border-radius:var(--r);padding:14px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:3px;color:#fff}
-.sidehd{display:flex;gap:12px;align-items:center;padding:4px 6px 14px;margin-bottom:4px;border-bottom:1px solid rgba(255,255,255,.12)}.sidehd b{display:block;font-size:14px;line-height:1.2;color:#fff}.sidehd small{color:rgba(255,255,255,.6);font-size:12px}
-.sl{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4);font-weight:700;padding:12px 12px 4px}
-.side button{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;text-align:left;padding:10px 12px;border-radius:10px;color:rgba(255,255,255,.68);font-weight:600}
-.side button:hover{background:rgba(255,255,255,.08);color:#fff;transform:none}
-.side button.on{background:linear-gradient(135deg,#0e7490,#0284c7);color:#fff;box-shadow:0 6px 16px rgba(14,116,144,.45)}
-.bdg{margin-left:auto;font-style:normal;font-size:11px;font-weight:700;background:#f59e0b;color:#1b1300;border-radius:99px;padding:1px 8px}
-.pt{display:flex;align-items:center;gap:14px}.pt h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
-.pti{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:color-mix(in srgb,var(--ac) 12%,transparent);color:var(--ac)}
-.crumb{display:inline-block;background:var(--card);border:1px solid var(--bd);border-radius:99px;padding:4px 14px;font-size:12.5px;color:var(--mu);margin:12px 0 20px}
-.banner{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between;border-radius:20px;padding:26px 30px;margin-bottom:18px;color:#fff;background:linear-gradient(120deg,#0b3b52 0%,#0e7490 55%,#0ea5c9 100%)}
-.banner::before{content:"";position:absolute;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.08);right:-60px;top:-110px}
-.banner>*{position:relative}.banner h2{margin:6px 0 4px;font-size:26px;font-weight:800;letter-spacing:-.02em;color:#fff}.banner p{margin:0;opacity:.92;max-width:520px}
-.bd{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
-.bb{display:flex;gap:10px;flex-wrap:wrap}.banner button{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);color:#fff;font-weight:600}.banner button:hover{border-color:#fff}.banner button.solid{background:#fff;color:#0b5f7a;border-color:#fff}
-.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:18px}
-.sc{--c:var(--ac);background:var(--card);border:1px solid var(--bd);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
-.sc.w{--c:var(--wn)}.sc.o{--c:var(--ok)}.sc.b{--c:var(--bad)}.sc.v{--c:var(--ac2)}
-.sct{display:flex;align-items:center;gap:14px;padding:18px}
-.rw{position:relative;width:54px;height:54px;flex:none}.rg{position:absolute;inset:0;width:54px;height:54px;transform:rotate(-90deg)}
-.rb{fill:none;stroke:color-mix(in srgb,var(--c) 16%,transparent);stroke-width:5}.rf{fill:none;stroke:var(--c);stroke-width:5;stroke-linecap:round}
-.ci{position:absolute;inset:0;display:grid;place-items:center;color:var(--c)}
-.sct b{display:block;font-size:26px;line-height:1.1;font-weight:800}.sct .l{display:block;color:var(--tx);font-size:13px;font-weight:600}.sct .cap{display:block;color:var(--mu);font-size:11.5px}
-.sc>button{width:100%;border:0;border-top:1px solid var(--bd);border-radius:0;background:color-mix(in srgb,var(--c) 6%,transparent);color:var(--c);display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;padding:10px 18px}
-.sc>button:hover{transform:none;background:color-mix(in srgb,var(--c) 13%,transparent)}
-.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
-.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;color:#fff;background:linear-gradient(135deg,var(--ac),var(--ac2));flex:none;font-style:normal}
-.qi{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd)}.qi:last-child{border-bottom:0}.qm{flex:1;min-width:0}.qm b{display:block;font-size:14px}.qm .mu{font-size:12.5px}
-.who{display:flex;align-items:center;gap:12px}
-.tl{position:relative;padding-left:6px}.tl::before{content:"";position:absolute;left:11px;top:8px;bottom:8px;width:2px;background:var(--bd)}
-.ti{position:relative;display:flex;gap:14px;padding:8px 0}.ti i{width:12px;height:12px;border-radius:50%;background:var(--ac);border:3px solid var(--card);box-shadow:0 0 0 2px var(--ac);margin-top:5px;flex:none;position:relative;z-index:1}
-.ti b{display:block;font-size:13.5px;font-weight:600}.ti .mu{font-size:12px}
-@media (max-width:860px){.shell{grid-template-columns:1fr}.side{position:static;flex-direction:row;overflow-x:auto;align-items:center}.sidehd,.sl{display:none}.side button{width:auto;white-space:nowrap}}
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+    <title>SEMS – Student Information and Enrollment Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f1f4fa;
+            --card: #ffffff;
+            --tx: #141b2d;
+            --mu: #667085;
+            --bd: #e3e8f2;
+            --ac: #3b4cca;
+            --ac2: #7a5af8;
+            --ok: #128a4a;
+            --wn: #b45309;
+            --bad: #c42b2b;
+            --sh: 0 1px 2px rgba(20, 27, 45, .05), 0 8px 24px rgba(20, 27, 45, .07);
+            --r: 16px;
+            color-scheme: light;
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px)
+        }
 
-body{font-size:16px}
-button{font-size:15px;min-height:42px;padding:10px 18px}
-input,select{font-size:15px;padding:11px 13px;min-height:44px}
-table{font-size:15px}.chk{font-size:15px;padding:14px 6px}
-:focus-visible{outline:3px solid color-mix(in srgb,var(--ac) 55%,transparent);outline-offset:2px}
-button.p,button.g{color:var(--on)}.lg,.av{color:var(--on)}.hero .lg,.sidehd .lg{color:#fff}.sidehd .lg{background:linear-gradient(135deg,#0e7490,#0284c7)}
-.ib{width:42px;padding:0;display:grid;place-items:center}
-.busy{opacity:.55;transition:opacity .15s;pointer-events:none}
-.show{display:flex;gap:8px;align-items:center;font-weight:500;color:var(--mu);margin:10px 0 4px;cursor:pointer}.show input{width:auto;min-height:0}
-.steps{display:flex;gap:8px;margin:4px 0 14px;flex-wrap:wrap}
-.stp{flex:1;min-width:150px;display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--bd);border-radius:12px;background:var(--bg);color:var(--mu);font-size:13.5px;font-weight:600}
-.stp i{font-style:normal;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--bd);color:var(--tx);font-size:12px;flex:none}
-.stp.done{color:var(--ok)}.stp.done i{background:var(--ok);color:var(--on)}
-.stp.now{border-color:var(--ac);color:var(--tx);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 18%,transparent)}.stp.now i{background:var(--ac);color:var(--on)}
-.hint{background:color-mix(in srgb,var(--ac) 9%,transparent);border-left:4px solid var(--ac);padding:10px 14px;border-radius:8px;margin:0 0 14px}
-#t{z-index:300}
-.mdb{position:fixed;inset:0;background:rgba(6,18,28,.6);display:grid;place-items:center;z-index:200;padding:20px}
-.mdc{background:var(--card);border-radius:20px;padding:30px;max-width:440px;width:100%;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.35)}
-.mdc h2{margin:0 0 8px}.mdc p{margin:0 0 10px}
-.mdi{width:64px;height:64px;border-radius:50%;margin:0 auto 14px;display:grid;place-items:center;background:color-mix(in srgb,var(--ac) 14%,transparent);color:var(--ac)}
-.mdx{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
-footer a{color:var(--ac);text-decoration:none;font-weight:600}
-</style></head><body>
-<header><div class="brand"><i class="lg">S</i><div><b>SEMS</b><small>Student Enrollment and Records</small></div></div><div class="sp"></div><span id="who" class="pill"></span><button id="th" class="ib" onclick="toggleTheme()" title="Switch light or dark mode" aria-label="Switch light or dark mode"></button><button id="lo" onclick="logout()" style="display:none">Log out</button></header>
-<main id="app"></main><footer><details class="tech"><summary>Platform technologies used</summary><ul>
-<li><b>Supabase</b> as the cloud service for the PostgreSQL database, authentication and hosted API</li>
-<li><b>supabase-js</b> as the SDK for sign in, queries and RPC calls from the browser</li>
-<li><b>Supabase REST and RPC endpoints</b> as the web service that carries enrollment, payment, approval and grading requests</li>
-<li><b>JSON over HTTPS</b> as the interoperability format between the page and the backend</li>
-<li><b>Chart.js</b> as a library for the admin dashboard charts</li>
-<li><b>jsPDF</b> as a library for the downloadable enrollment slip</li>
-<li><b>DataTables with jQuery</b> as a plug-in for searching, sorting and paging tables</li>
-<li><b>Git and GitHub Pages</b> for version control, collaboration and deployment</li></ul></details>
-SEMS · Student Information and Enrollment Management System · Platform Technologies Final Project <a id="gh" hidden target="_blank" rel="noopener"> · Source code on GitHub</a></footer><div id="t" role="status" aria-live="polite"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-<script>
-const CFG={url:"https://edgbbujkmodutaarblne.supabase.co",key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkZ2JidWprbW9kdXRhYXJibG5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwNDYyMTYsImV4cCI6MjEwOTYyMjIxNn0.01Hn5MZq591SFmgAdUOP0rWSKkrH8ndurVwx-75CnZo"};
-const configured=!CFG.url.includes("YOUR_");
-const sb=configured?supabase.createClient(CFG.url,CFG.key):null;
-const $=s=>document.querySelector(s);
-const el=id=>document.getElementById(id);
-const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function toast(m,bad){const t=$("#t");t.textContent=m;t.className="show "+(bad?"bad":"");clearTimeout(toast.h);toast.h=setTimeout(()=>t.className="",3500)}
-const peso=n=>"₱"+Number(n).toLocaleString();
-const tag=s=>`<span class="tag ${s}">${s}</span>`;
-const q=async p=>{const{data,error}=await p;if(error)throw error;return data};
-const call=async(p,ok)=>{const{error}=await p;if(error)toast(error.message,1);else toast(ok);await render()};
-let pendingEmail="",me=null,mode="in",SUBS=[],tab="dash",after=null,charts=[],SLIP=null;
-const I={
-dash:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
-enr:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>',
-gr:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
-us:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
-su:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
-lg:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
-cash:'<path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
-warn:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>',
-ok:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/>',
-arrow:'<path d="M5 12h14M12 5l7 7"/>',
-mail:'<path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M22 6l-10 7L2 6"/>',
-moon:'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
-sun:'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>'};
-const ic=(k,s)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[k]}</svg>`;
-const TITLES={dash:["Dashboard","Overview of the whole system"],enr:["Enrollments","Requests and payments"],gr:["Grades","Post grades for enrolled students"],us:["Users","Accounts and roles"],su:["Subjects","Subject list and prerequisites"],lg:["Audit log","Recent system activity"]};
-const ago=d=>{const m=Math.floor((Date.now()-new Date(d))/60000);if(m<1)return "just now";if(m<60)return m+" min ago";if(m<1440)return Math.floor(m/60)+" hr ago";const n=Math.floor(m/1440);return n+(n>1?" days ago":" day ago")};
-const ring=(pct,icon)=>`<div class="rw"><svg class="rg" viewBox="0 0 54 54"><circle class="rb" cx="27" cy="27" r="22"/><circle class="rf" cx="27" cy="27" r="22" stroke-dasharray="${(Math.max(0,Math.min(100,pct))*1.3823).toFixed(1)} 138.23"/></svg><span class="ci">${ic(icon,20)}</span></div>`;
-const avatar=n=>`<span class="av">${esc((n||"?").trim().charAt(0).toUpperCase())}</span>`;
-const codes=e=>(e.enrollment_items||[]).map(i=>i.subject_code);
-const table=(heads,rows,empty,sortable)=>{
- if(!rows.length)return `<p class="mu">${empty}</p>`;
- const th=heads.map(h=>Array.isArray(h)?`<th class="noso">${h[0]}</th>`:`<th>${h}</th>`).join("");
- return `<div class="tw"><table class="${sortable?"dt":""}"><thead><tr>${th}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`};
-const showPw=on=>["p","rw","rw2"].forEach(i=>{const x=el(i);if(x)x.type=on?"text":"password"});
-function closeModal(){const m=el("md");if(m)m.remove()}
-function showModal(h){
- closeModal();
- const d=document.createElement("div");
- d.id="md";
- d.className="mdb";
- d.setAttribute("onclick","event.target===this&&closeModal()");
- d.innerHTML=`<div class="mdc" role="dialog" aria-modal="true">${h}</div>`;
- document.body.appendChild(d);
+        @media (prefers-color-scheme:dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #0b1018;
+                --card: #141b27;
+                --tx: #e9eef7;
+                --mu: #98a4b8;
+                --bd: #263042;
+                --ac: #8a95ff;
+                --ac2: #b39bff;
+                --ok: #4ade80;
+                --wn: #fbbf24;
+                --bad: #f87171;
+                --sh: 0 1px 2px rgba(0, 0, 0, .5);
+                color-scheme: dark
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --bg: #0b1018;
+            --card: #141b27;
+            --tx: #e9eef7;
+            --mu: #98a4b8;
+            --bd: #263042;
+            --ac: #8a95ff;
+            --ac2: #b39bff;
+            --ok: #4ade80;
+            --wn: #fbbf24;
+            --bad: #f87171;
+            --sh: 0 1px 2px rgba(0, 0, 0, .5);
+            color-scheme: dark
+        }
+
+        html {
+            scroll-padding-top: env(safe-area-inset-top, 0px)
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--tx);
+            font: 15px/1.6 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: color-mix(in srgb, var(--card) 88%, transparent);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--bd);
+            padding: 12px 24px;
+            display: flex;
+            gap: 14px;
+            align-items: center
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center
+        }
+
+        .brand b {
+            display: block;
+            font-size: 17px;
+            line-height: 1.1;
+            letter-spacing: .02em;
+            font-weight: 800
+        }
+
+        .brand small {
+            color: var(--mu);
+            font-size: 12px
+        }
+
+        .lg {
+            font-style: normal;
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, var(--ac), var(--ac2));
+            color: #fff;
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            box-shadow: 0 4px 12px rgba(91, 76, 230, .35)
+        }
+
+        .sp {
+            flex: 1
+        }
+
+        .pill {
+            background: color-mix(in srgb, var(--ac) 10%, transparent);
+            color: var(--ac);
+            border-radius: 99px;
+            padding: 5px 14px;
+            font-size: 13px;
+            font-weight: 600
+        }
+
+        .pill:empty {
+            display: none
+        }
+
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 28px 18px 40px
+        }
+
+        footer {
+            text-align: center;
+            color: var(--mu);
+            font-size: 12.5px;
+            padding: 18px;
+            border-top: 1px solid var(--bd)
+        }
+
+        .hd {
+            margin: 2px 0 22px
+        }
+
+        .hd h1 {
+            margin: 0 0 2px;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -.02em
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--bd);
+            border-radius: var(--r);
+            padding: 22px;
+            margin-bottom: 18px;
+            box-shadow: var(--sh)
+        }
+
+        h2 {
+            margin: 0 0 14px;
+            font-size: 17px;
+            font-weight: 700
+        }
+
+        button {
+            font: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid var(--bd);
+            background: var(--card);
+            color: var(--tx);
+            border-radius: 10px;
+            padding: 9px 16px;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        button:hover {
+            border-color: var(--ac);
+            transform: translateY(-1px)
+        }
+
+        button.p {
+            background: linear-gradient(135deg, var(--ac), var(--ac2));
+            border-color: transparent;
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(91, 76, 230, .3)
+        }
+
+        button.g {
+            background: var(--ok);
+            border-color: var(--ok);
+            color: #fff
+        }
+
+        button.d {
+            color: var(--bad)
+        }
+
+        button:disabled {
+            opacity: .45;
+            cursor: not-allowed
+        }
+
+        button.w {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px
+        }
+
+        input,
+        select {
+            font: inherit;
+            border: 1px solid var(--bd);
+            background: var(--bg);
+            color: var(--tx);
+            border-radius: 10px;
+            padding: 10px 12px;
+            width: 100%;
+            transition: border-color .15s
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--ac);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--ac) 20%, transparent)
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--tx);
+            margin: 12px 0 5px
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0 14px
+        }
+
+        .tw {
+            overflow-x: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--bd);
+            vertical-align: middle
+        }
+
+        th {
+            color: var(--mu);
+            font-weight: 600;
+            font-size: 11.5px;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            background: var(--bg)
+        }
+
+        th:first-child {
+            border-radius: 8px 0 0 8px
+        }
+
+        th:last-child {
+            border-radius: 0 8px 8px 0
+        }
+
+        tr:last-child td {
+            border-bottom: 0
+        }
+
+        tbody tr:hover td,
+        table tr:not(:first-child):hover td {
+            background: color-mix(in srgb, var(--ac) 4%, transparent)
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 3px 11px;
+            border-radius: 99px;
+            font-size: 12px;
+            font-weight: 600;
+            background: color-mix(in srgb, currentColor 13%, transparent)
+        }
+
+        .Pending {
+            color: var(--wn)
+        }
+
+        .Approved,
+        .Paid,
+        .Passed {
+            color: var(--ok)
+        }
+
+        .Rejected,
+        .Unpaid,
+        .Failed {
+            color: var(--bad)
+        }
+
+        .chk {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 12px 4px;
+            border-bottom: 1px solid var(--bd);
+            color: var(--tx);
+            font-size: 14px;
+            margin: 0;
+            font-weight: 400;
+            cursor: pointer
+        }
+
+        .chk:hover {
+            background: color-mix(in srgb, var(--ac) 4%, transparent)
+        }
+
+        .chk input {
+            width: auto;
+            margin-top: 4px;
+            accent-color: var(--ac)
+        }
+
+        .chk.off {
+            opacity: .5;
+            cursor: not-allowed
+        }
+
+        .mu {
+            color: var(--mu);
+            font-size: 13px
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            margin-bottom: 18px
+        }
+
+        .stat {
+            background: var(--card);
+            border: 1px solid var(--bd);
+            border-radius: var(--r);
+            padding: 16px 18px;
+            box-shadow: var(--sh);
+            border-left: 4px solid var(--ac)
+        }
+
+        .stat b {
+            font-size: 26px;
+            display: block;
+            line-height: 1.3;
+            font-weight: 800
+        }
+
+        .auth {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr;
+            gap: 20px;
+            align-items: stretch;
+            margin-top: 12px
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+            padding: 44px 40px;
+            color: #fff;
+            background: linear-gradient(135deg, #2a2f9e 0%, #5b4ce6 55%, #8f6bff 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 460px
+        }
+
+        .hero::before,
+        .hero::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .08)
+        }
+
+        .hero::before {
+            width: 320px;
+            height: 320px;
+            right: -90px;
+            top: -90px
+        }
+
+        .hero::after {
+            width: 220px;
+            height: 220px;
+            left: -60px;
+            bottom: -70px
+        }
+
+        .hero>* {
+            position: relative
+        }
+
+        .hero h1 {
+            margin: 18px 0 10px;
+            font-size: 38px;
+            line-height: 1.1;
+            font-weight: 800;
+            letter-spacing: -.02em
+        }
+
+        .hero p {
+            opacity: .92;
+            margin: 0 0 22px;
+            font-size: 16px;
+            max-width: 380px
+        }
+
+        .hero .lg {
+            background: rgba(255, 255, 255, .2);
+            box-shadow: none;
+            width: 46px;
+            height: 46px;
+            font-size: 20px
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px
+        }
+
+        .chips span {
+            background: rgba(255, 255, 255, .16);
+            border: 1px solid rgba(255, 255, 255, .25);
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-size: 13px;
+            font-weight: 500
+        }
+
+        .form {
+            margin: 0;
+            padding: 26px
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 5px;
+            margin-bottom: 10px
+        }
+
+        .tabs button {
+            flex: 1;
+            border: 0;
+            background: none;
+            padding: 10px
+        }
+
+        .tabs button:hover {
+            transform: none
+        }
+
+        .tabs button.on {
+            background: var(--card);
+            box-shadow: var(--sh);
+            font-weight: 700;
+            color: var(--ac)
+        }
+
+        .demo {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px
+        }
+
+        #t {
+            position: fixed;
+            left: 50%;
+            bottom: 28px;
+            transform: translateX(-50%);
+            background: var(--tx);
+            color: var(--bg);
+            padding: 12px 20px;
+            border-radius: 12px;
+            opacity: 0;
+            pointer-events: none;
+            transition: .2s;
+            max-width: 90%;
+            z-index: 9;
+            box-shadow: var(--sh);
+            font-weight: 500
+        }
+
+        #t.show {
+            opacity: 1
+        }
+
+        #t.bad {
+            background: var(--bad);
+            color: #fff
+        }
+
+        .inl {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap
+        }
+
+        .inl input {
+            min-width: 100px;
+            flex: 1
+        }
+
+        @media (max-width:760px) {
+            .auth {
+                grid-template-columns: 1fr
+            }
+
+            .hero {
+                padding: 28px 24px;
+                min-height: 0
+            }
+
+            .hero h1 {
+                font-size: 28px
+            }
+
+            header {
+                padding: 10px 14px
+            }
+
+            .brand small {
+                display: none
+            }
+
+            .hd h1 {
+                font-size: 23px
+            }
+        }
+
+        .cbox {
+            position: relative;
+            height: 280px
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 18px
+        }
+
+        .dataTables_wrapper::after {
+            content: "";
+            display: block;
+            clear: both
+        }
+
+        .dataTables_wrapper table.dt {
+            clear: both;
+            margin: 8px 0
+        }
+
+        .dataTables_length {
+            float: left;
+            margin-bottom: 10px
+        }
+
+        .dataTables_filter {
+            float: right;
+            margin-bottom: 10px
+        }
+
+        .dataTables_length label,
+        .dataTables_filter label {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: var(--mu)
+        }
+
+        .dataTables_length select {
+            width: auto;
+            padding: 6px 8px
+        }
+
+        .dataTables_filter input {
+            width: 200px;
+            padding: 7px 10px
+        }
+
+        .dataTables_info {
+            float: left;
+            margin-top: 12px;
+            color: var(--mu);
+            font-size: 13px
+        }
+
+        .dataTables_paginate {
+            float: right;
+            margin-top: 8px
+        }
+
+        .paginate_button {
+            display: inline-block;
+            padding: 5px 12px;
+            margin-left: 4px;
+            border: 1px solid var(--bd);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px
+        }
+
+        .paginate_button:hover {
+            border-color: var(--ac)
+        }
+
+        .paginate_button.current {
+            background: var(--ac);
+            border-color: var(--ac);
+            color: var(--card);
+            font-weight: 600
+        }
+
+        .paginate_button.disabled {
+            opacity: .4;
+            cursor: default;
+            pointer-events: none
+        }
+
+        table.dt th.sorting,
+        table.dt th.sorting_asc,
+        table.dt th.sorting_desc {
+            cursor: pointer;
+            user-select: none
+        }
+
+        table.dt th.sorting::after {
+            content: " \2195";
+            opacity: .35
+        }
+
+        table.dt th.sorting_asc::after {
+            content: " \2191";
+            color: var(--ac)
+        }
+
+        table.dt th.sorting_desc::after {
+            content: " \2193";
+            color: var(--ac)
+        }
+
+        .tech {
+            max-width: 760px;
+            margin: 0 auto 10px;
+            text-align: left
+        }
+
+        .tech summary {
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            color: var(--ac)
+        }
+
+        .tech ul {
+            margin: 10px 0 0;
+            padding-left: 20px;
+            line-height: 1.8
+        }
+
+        main.wide {
+            max-width: 1280px
+        }
+
+        .shell {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr);
+            gap: 22px;
+            align-items: start
+        }
+
+        .side {
+            position: sticky;
+            top: 84px;
+            background: linear-gradient(180deg, #171c44, #0e1230);
+            border-radius: var(--r);
+            padding: 14px;
+            box-shadow: var(--sh);
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            color: #fff
+        }
+
+        .sidehd {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 4px 6px 14px;
+            margin-bottom: 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, .12)
+        }
+
+        .sidehd b {
+            display: block;
+            font-size: 14px;
+            line-height: 1.2;
+            color: #fff
+        }
+
+        .sidehd small {
+            color: rgba(255, 255, 255, .6);
+            font-size: 12px
+        }
+
+        .sl {
+            font-size: 10.5px;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .4);
+            font-weight: 700;
+            padding: 12px 12px 4px
+        }
+
+        .side button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            border: 0;
+            background: none;
+            text-align: left;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, .68);
+            font-weight: 600
+        }
+
+        .side button:hover {
+            background: rgba(255, 255, 255, .08);
+            color: #fff;
+            transform: none
+        }
+
+        .side button.on {
+            background: linear-gradient(135deg, #5b4ce6, #8f6bff);
+            color: #fff;
+            box-shadow: 0 6px 16px rgba(91, 76, 230, .45)
+        }
+
+        .bdg {
+            margin-left: auto;
+            font-style: normal;
+            font-size: 11px;
+            font-weight: 700;
+            background: #f59e0b;
+            color: #1b1300;
+            border-radius: 99px;
+            padding: 1px 8px
+        }
+
+        .pt {
+            display: flex;
+            align-items: center;
+            gap: 14px
+        }
+
+        .pt h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            line-height: 1.1
+        }
+
+        .pti {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            background: color-mix(in srgb, var(--ac) 12%, transparent);
+            color: var(--ac)
+        }
+
+        .crumb {
+            display: inline-block;
+            background: var(--card);
+            border: 1px solid var(--bd);
+            border-radius: 99px;
+            padding: 4px 14px;
+            font-size: 12.5px;
+            color: var(--mu);
+            margin: 12px 0 20px
+        }
+
+        .banner {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 20px;
+            padding: 26px 30px;
+            margin-bottom: 18px;
+            color: #fff;
+            background: linear-gradient(120deg, #2a2f9e 0%, #5b4ce6 55%, #8f6bff 100%)
+        }
+
+        .banner::before {
+            content: "";
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .08);
+            right: -60px;
+            top: -110px
+        }
+
+        .banner>* {
+            position: relative
+        }
+
+        .banner h2 {
+            margin: 6px 0 4px;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            color: #fff
+        }
+
+        .banner p {
+            margin: 0;
+            opacity: .92;
+            max-width: 520px
+        }
+
+        .bd {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            opacity: .8
+        }
+
+        .bb {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+
+        .banner button {
+            background: rgba(255, 255, 255, .16);
+            border: 1px solid rgba(255, 255, 255, .35);
+            color: #fff;
+            font-weight: 600
+        }
+
+        .banner button:hover {
+            border-color: #fff
+        }
+
+        .banner button.solid {
+            background: #fff;
+            color: #3b3fc0;
+            border-color: #fff
+        }
+
+        .sgrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 18px
+        }
+
+        .sc {
+            --c: var(--ac);
+            background: var(--card);
+            border: 1px solid var(--bd);
+            border-radius: var(--r);
+            box-shadow: var(--sh);
+            overflow: hidden
+        }
+
+        .sc.w {
+            --c: var(--wn)
+        }
+
+        .sc.o {
+            --c: var(--ok)
+        }
+
+        .sc.b {
+            --c: var(--bad)
+        }
+
+        .sc.v {
+            --c: var(--ac2)
+        }
+
+        .sct {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px
+        }
+
+        .rw {
+            position: relative;
+            width: 54px;
+            height: 54px;
+            flex: none
+        }
+
+        .rg {
+            position: absolute;
+            inset: 0;
+            width: 54px;
+            height: 54px;
+            transform: rotate(-90deg)
+        }
+
+        .rb {
+            fill: none;
+            stroke: color-mix(in srgb, var(--c) 16%, transparent);
+            stroke-width: 5
+        }
+
+        .rf {
+            fill: none;
+            stroke: var(--c);
+            stroke-width: 5;
+            stroke-linecap: round
+        }
+
+        .ci {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: var(--c)
+        }
+
+        .sct b {
+            display: block;
+            font-size: 26px;
+            line-height: 1.1;
+            font-weight: 800
+        }
+
+        .sct .l {
+            display: block;
+            color: var(--tx);
+            font-size: 13px;
+            font-weight: 600
+        }
+
+        .sct .cap {
+            display: block;
+            color: var(--mu);
+            font-size: 11.5px
+        }
+
+        .sc>button {
+            width: 100%;
+            border: 0;
+            border-top: 1px solid var(--bd);
+            border-radius: 0;
+            background: color-mix(in srgb, var(--c) 6%, transparent);
+            color: var(--c);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 18px
+        }
+
+        .sc>button:hover {
+            transform: none;
+            background: color-mix(in srgb, var(--c) 13%, transparent)
+        }
+
+        .two {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 18px
+        }
+
+        .av {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: #fff;
+            background: linear-gradient(135deg, var(--ac), var(--ac2));
+            flex: none;
+            font-style: normal
+        }
+
+        .qi {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--bd)
+        }
+
+        .qi:last-child {
+            border-bottom: 0
+        }
+
+        .qm {
+            flex: 1;
+            min-width: 0
+        }
+
+        .qm b {
+            display: block;
+            font-size: 14px
+        }
+
+        .qm .mu {
+            font-size: 12.5px
+        }
+
+        .who {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .tl {
+            position: relative;
+            padding-left: 6px
+        }
+
+        .tl::before {
+            content: "";
+            position: absolute;
+            left: 11px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: var(--bd)
+        }
+
+        .ti {
+            position: relative;
+            display: flex;
+            gap: 14px;
+            padding: 8px 0
+        }
+
+        .ti i {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--ac);
+            border: 3px solid var(--card);
+            box-shadow: 0 0 0 2px var(--ac);
+            margin-top: 5px;
+            flex: none;
+            position: relative;
+            z-index: 1
+        }
+
+        .ti b {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 600
+        }
+
+        .ti .mu {
+            font-size: 12px
+        }
+
+        @media (max-width:860px) {
+            .shell {
+                grid-template-columns: 1fr
+            }
+
+            .side {
+                position: static;
+                flex-direction: row;
+                overflow-x: auto;
+                align-items: center
+            }
+
+            .sidehd,
+            .sl {
+                display: none
+            }
+
+            .side button {
+                width: auto;
+                white-space: nowrap
+            }
+        }
+
+        footer a {
+            color: var(--ac);
+            text-decoration: none;
+            font-weight: 600
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="brand"><i class="lg">S</i>
+            <div><b>SEMS</b><small>Student Enrollment and Records</small></div>
+        </div>
+        <div class="sp"></div><span id="who" class="pill"></span><button id="lo" onclick="logout()"
+            style="display:none">Log out</button>
+    </header>
+    <main id="app"></main>
+    <footer>
+        <details class="tech">
+            <summary>Platform technologies used</summary>
+            <ul>
+                <li><b>Supabase</b> as the cloud service for the PostgreSQL database, authentication and hosted API</li>
+                <li><b>supabase-js</b> as the SDK for sign in, queries and RPC calls from the browser</li>
+                <li><b>Supabase REST and RPC endpoints</b> as the web service that carries enrollment, payment, approval
+                    and grading requests</li>
+                <li><b>JSON over HTTPS</b> as the interoperability format between the page and the backend</li>
+                <li><b>Chart.js</b> as a library for the admin dashboard charts</li>
+                <li><b>jsPDF</b> as a library for the downloadable enrollment slip</li>
+                <li><b>DataTables with jQuery</b> as a plug-in for searching, sorting and paging tables</li>
+                <li><b>Git and GitHub Pages</b> for version control, collaboration and deployment</li>
+            </ul>
+        </details>
+        SEMS · Student Information and Enrollment Management System · Platform Technologies Final Project <a id="gh"
+            hidden target="_blank" rel="noopener"> · Source code on GitHub</a>
+    </footer>
+    <div id="t"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script>
+        const CFG = { url: "https://edgbbujkmodutaarblne.supabase.co", key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkZ2JidWprbW9kdXRhYXJibG5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwNDYyMTYsImV4cCI6MjEwOTYyMjIxNn0.01Hn5MZq591SFmgAdUOP0rWSKkrH8ndurVwx-75CnZo" };
+        const configured = !CFG.url.includes("YOUR_");
+        const sb = configured ? supabase.createClient(CFG.url, CFG.key) : null;
+        const $ = s => document.querySelector(s);
+        const el = id => document.getElementById(id);
+        const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+        function toast(m, bad) { const t = $("#t"); t.textContent = m; t.className = "show " + (bad ? "bad" : ""); clearTimeout(toast.h); toast.h = setTimeout(() => t.className = "", 3500) }
+        const peso = n => "₱" + Number(n).toLocaleString();
+        const tag = s => `<span class="tag ${s}">${s}</span>`;
+        const q = async p => { const { data, error } = await p; if (error) throw error; return data };
+        const call = async (p, ok) => { const { error } = await p; if (error) toast(error.message, 1); else toast(ok); await render() };
+        let me = null, mode = "in", SUBS = [], tab = "dash", after = null, charts = [], SLIP = null;
+        const I = {
+            dash: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+            enr: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>',
+            gr: '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+            us: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+            su: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+            lg: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+            cash: '<path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+            warn: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>',
+            ok: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/>',
+            arrow: '<path d="M5 12h14M12 5l7 7"/>'
+        };
+        const ic = (k, s) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[k]}</svg>`;
+        const TITLES = { dash: ["Dashboard", "Overview of the whole system"], enr: ["Enrollments", "Requests and payments"], gr: ["Grades", "Post grades for enrolled students"], us: ["Users", "Accounts and roles"], su: ["Subjects", "Subject list and prerequisites"], lg: ["Audit log", "Recent system activity"] };
+        const ago = d => { const m = Math.floor((Date.now() - new Date(d)) / 60000); if (m < 1) return "just now"; if (m < 60) return m + " min ago"; if (m < 1440) return Math.floor(m / 60) + " hr ago"; const n = Math.floor(m / 1440); return n + (n > 1 ? " days ago" : " day ago") };
+        const ring = (pct, icon) => `<div class="rw"><svg class="rg" viewBox="0 0 54 54"><circle class="rb" cx="27" cy="27" r="22"/><circle class="rf" cx="27" cy="27" r="22" stroke-dasharray="${(Math.max(0, Math.min(100, pct)) * 1.3823).toFixed(1)} 138.23"/></svg><span class="ci">${ic(icon, 20)}</span></div>`;
+        const avatar = n => `<span class="av">${esc((n || "?").trim().charAt(0).toUpperCase())}</span>`;
+        const codes = e => (e.enrollment_items || []).map(i => i.subject_code);
+        const table = (heads, rows, empty, sortable) => {
+            if (!rows.length) return `<p class="mu">${empty}</p>`;
+            const th = heads.map(h => Array.isArray(h) ? `<th class="noso">${h[0]}</th>` : `<th>${h}</th>`).join("");
+            return `<div class="tw"><table class="${sortable ? "dt" : ""}"><thead><tr>${th}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`
+        };
+        async function loadMe() { const { data: { user } } = await sb.auth.getUser(); if (!user) { me = null; return } const { data, error } = await sb.from("profiles").select("*").eq("id", user.id).single(); me = error ? null : data }
+        function setMode(m) { mode = m; render() }
+        async function login() { const { error } = await sb.auth.signInWithPassword({ email: $("#u").value.trim(), password: $("#p").value }); if (error) return toast(error.message, 1); await loadMe(); render() }
+        async function logout() { await sb.auth.signOut(); me = null; tab = "dash"; render() }
+        async function register() {
+            const v = i => $("#" + i).value;
+            const firstName = v("rfn").trim();
+            const middleName = v("rmn").trim();
+            const lastName = v("rln").trim();
+            const email = v("re").trim();
+            const pw = v("rw");
+
+            // Validations
+            if (!firstName || !lastName) return toast("Enter your First name and Last name.", 1);
+            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast("Enter a valid email address.", 1);
+
+            if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/\d/.test(pw)) {
+                return toast("Weak password: Must be at least 8 characters with letters and numbers.", 1);
+            }
+
+            if (pw !== v("rw2")) return toast("Passwords do not match.", 1);
+
+            // Pinagsasama natin ang mga pangalan para maging buong pangalan para sa database
+            const fullName = `${firstName} ${middleName ? middleName + ' ' : ''}${lastName}`;
+
+            const { data, error } = await sb.auth.signUp({
+                email,
+                password: pw,
+                options: {
+                    data: {
+                        full_name: fullName,
+                        program: v("rg")
+                    }
+                }
+            });
+
+            if (error) return toast(error.message, 1);
+
+            if (data.session) {
+                await loadMe();
+                toast("Account created. Welcome!");
+                render();
+            } else {
+                mode = "in";
+                render();
+                toast("Check your email to confirm your account, then sign in.");
+            }
+        }
+        const greet = () => `<div class="hd"><h1>Welcome, ${esc(me.full_name.split(" ")[0] || me.role)}</h1><span class="mu">${{ Student: "Enroll in subjects and track your grades.", Admin: "Manage enrollments, payments, grades, subjects and users." }[me.role]}</span></div>`;
+        function vSetup() { return `<div class="card" style="max-width:640px;margin:30px auto"><h2>Setup needed</h2><p>Open <b>index.html</b>, find <code>CFG</code> near the top of the script and paste your Supabase <b>Project URL</b> and <b>anon key</b>. See README.md for the full steps.</p></div>` }
+        function vLogin() {
+            const reg = mode === "up"; return `<div class="auth"><section class="hero"><i class="lg">S</i><h1>Enroll online.<br>Skip the line.</h1><p>One secure portal for students and school administrators.</p><div class="chips"><span>Prerequisite checks</span><span>Payment verification</span><span>Admin approval</span><span>Instant grades</span></div></section>
+<section class="card form"><div class="tabs"><button class="${reg ? "" : "on"}" onclick="setMode('in')">Sign in</button><button class="${reg ? "on" : ""}" onclick="setMode('up')">Register</button></div>` + (reg ?
+                    `<div class="row">
+                    <div><label>First name</label><input id="rfn" autocomplete="given-name"></div>
+                    <div><label>Last name</label><input id="rln" autocomplete="family-name"></div>
+                 </div>
+                 <label>Middle name (Optional)</label><input id="rmn" autocomplete="additional-name">
+                 <label>Email</label><input id="re" type="email" autocomplete="email">
+                 <label>Program</label>
+                 <select id="rg">
+                     <option>BS Information Technology</option>
+                     <option>BS Computer Science</option>
+                 </select>
+                 <div class="row">
+                    <div>
+                        <label>Password</label>
+                        <input id="rw" type="password" autocomplete="new-password" oninput="checkPasswordStrength()">
+                        <small id="pw-hint" class="mu" style="display:block; margin-top:4px; font-size:11.5px;">Must be 8+ characters with letters & numbers</small>
+                    </div>
+                    <div>
+                        <label>Confirm password</label>
+                        <input id="rw2" type="password" autocomplete="new-password">
+                    </div>
+                 </div>
+                 <button class="p w" style="margin-top:12px;" onclick="register()">Create student account</button>` :
+                    `<label>Email</label><input id="u" type="email" autocomplete="username"><label>Password</label><input id="p" type="password" autocomplete="current-password" onkeydown="event.key==='Enter'&&login()"><p><button class="p w" onclick="login()">Sign in</button></p>`) + `</section></div>`
+        }
+
+
+        function checkPasswordStrength() {
+            const pw = $("#rw").value;
+            const hint = $("#pw-hint");
+            if (!hint) return;
+
+            const hasLen = pw.length >= 8;
+            const hasLetter = /[A-Za-z]/.test(pw);
+            const hasNum = /\d/.test(pw);
+
+            if (pw.length === 0) {
+                hint.style.color = "var(--mu)";
+                hint.textContent = "Must be 8+ characters with letters & numbers";
+                return;
+            }
+
+            if (hasLen && hasLetter && hasNum) {
+                hint.style.color = "#10b981"; // Kulay berde (Strong)
+                hint.textContent = "✓ Strong password";
+            } else {
+                hint.style.color = "#ef4444"; // Kulay pula (Weak/Kulang pa)
+                let missing = [];
+                if (!hasLen) missing.push("8+ chars");
+                if (!hasLetter) missing.push("letters");
+                if (!hasNum) missing.push("numbers");
+                hint.textContent = "Weak: needs " + missing.join(", ");
+            }
+        }
+        function downloadSlip() {
+            if (!SLIP || typeof window.jspdf === "undefined") return toast("PDF tool is not available right now.", 1);
+            const { enr, subs } = SLIP, d = new window.jspdf.jsPDF();
+            let y = 22, total = 0;
+            const line = t => { d.text(t, 20, y); y += 8 };
+            d.setFontSize(18); d.text("SEMS Enrollment Slip", 20, y); y += 12;
+            d.setFontSize(11);
+            line("Student: " + me.full_name);
+            line("Student ID: " + me.student_no);
+            line("Program: " + me.program);
+            line("Enrollment no: " + enr.id);
+            line("Status: " + enr.status);
+            line("Payment: " + (enr.paid ? "Paid, OR " + enr.or_no : "Unpaid"));
+            y += 4;
+            d.setFontSize(13); line("Subjects"); d.setFontSize(11);
+            for (const c of codes(enr)) {
+                const s = subs.find(x => x.code === c);
+                total += s.units;
+                line(c + "   " + s.title + "   " + s.units + " units");
+            }
+            y += 2;
+            line("Total units: " + total);
+            line("Assessed fee: PHP " + Number(enr.fee).toLocaleString());
+            y += 6;
+            d.setFontSize(9); d.text("Generated on " + new Date().toLocaleString(), 20, y);
+            d.save("enrollment-slip-" + me.student_no + ".pdf");
+        }
+        async function vStudent() {
+            const [subs, enr, gr] = await Promise.all([q(sb.from("subjects").select("*").order("code")), q(sb.from("enrollments").select("*,enrollment_items(subject_code)").order("id")), q(sb.from("grades").select("*"))]); SUBS = subs;
+            const sub = c => subs.find(s => s.code === c), pass = c => gr.some(g => g.subject_code === c && g.grade <= 3);
+            const cur = enr.find(e => e.status !== "Rejected"), last = enr[enr.length - 1];
+            SLIP = cur ? { enr: cur, subs } : null;
+            const tu = gr.reduce((a, g) => a + sub(g.subject_code).units, 0), gwa = gr.length ? (gr.reduce((a, g) => a + g.grade * sub(g.subject_code).units, 0) / tu).toFixed(2) : "–";
+            let enrl;
+            if (cur) enrl = table(["Subject", "Units"], codes(cur).map(s => `<tr><td>${s} – ${esc(sub(s).title)}</td><td>${sub(s).units}</td></tr>`), "") + `<p>Status: ${tag(cur.status)} Payment: ${tag(cur.paid ? "Paid" : "Unpaid")} <span class="mu">Assessed fee ${peso(cur.fee)}${cur.or_no ? " · OR " + esc(cur.or_no) : ""}</span></p><button class="p" onclick="downloadSlip()">Download enrollment slip (PDF)</button>`;
+            else enrl = (last ? `<p class="mu">Last request rejected: ${esc(last.note)}</p>` : "") + subs.filter(s => !pass(s.code)).map(s => { const ok = !s.prereq || pass(s.prereq); return `<label class="chk ${ok ? "" : "off"}"><input type="checkbox" class="sub" value="${s.code}" ${ok ? "" : "disabled"} onchange="calc()"><span>${s.code} – ${esc(s.title)} <span class="mu">(${s.units} units${s.prereq ? " · prereq " + s.prereq : ""}${ok ? "" : " – not met"})</span></span></label>` }).join("") + `<p>Selected: <b id="tu">0</b> units · Estimated fee: <b id="tf">${peso(0)}</b> <span class="mu">(₱1,000/unit + ₱1,500 misc.)</span></p><button class="p" onclick="submitEnroll()">Submit enrollment</button>`;
+            const grows = gr.map(g => `<tr><td>${g.subject_code} – ${esc(sub(g.subject_code).title)}</td><td>${Number(g.grade).toFixed(2)}</td><td>${tag(g.grade <= 3 ? "Passed" : "Failed")}</td></tr>`);
+            return `<div class="stats"><div class="stat"><span class="mu">Student ID</span><b style="font-size:17px">${esc(me.student_no)}</b></div><div class="stat"><span class="mu">Program</span><b style="font-size:15px">${esc(me.program)}</b></div><div class="stat"><span class="mu">GWA</span><b>${gwa}</b></div></div>
+<div class="card"><h2>Online enrollment</h2>${enrl}</div>
+<div class="card"><h2>Grades</h2>${table(["Subject", "Grade", "Remarks"], grows, "No grades yet.")}</div>`
+        }
+        let studentTab = "overview";
+
+        function setStudentTab(tabName) {
+            studentTab = tabName;
+            render();
+        }
+        const availableSubjects = [
+    { code: "ITEC101", title: "Introduction to Computing", units: 3, prereq: "None" },
+    { code: "ITEC102", title: "Computer Programming 1", units: 3, prereq: "None" },
+    { code: "ITEC103", title: "Computer Programming 2", units: 3, prereq: "ITEC102" },
+    { code: "ITEC104", title: "Web Systems and Technologies", units: 3, prereq: "ITEC101" },
+    { code: "ITEC205", title: "Information Management", units: 3, prereq: "ITEC103" },
+    { code: "PLAT301", title: "Platform Technologies", units: 3, prereq: "ITEC205" },
+    { code: "GEC101", title: "Understanding the Self", units: 3, prereq: "None" }
+];
+
+let enrolledSubjectCodes = [];
+
+function toggleSubjectSelection(code) {
+    if (enrolledSubjectCodes.includes(code)) {
+        enrolledSubjectCodes = enrolledSubjectCodes.filter(c => c !== code);
+    } else {
+        enrolledSubjectCodes.push(code);
+    }
+    render();
 }
-function mailModal(email){
- showModal(`<div class="mdi">${ic("mail",30)}</div><h2>Check your email</h2><p>We sent a confirmation link to <b>${esc(email)}</b>. Click the link in that email to activate your account, then sign in here.</p><p class="mu">Cannot find it? Look in your spam or junk folder.</p><div class="mdx"><button onclick="resendMail()">Resend email</button><button class="p" onclick="closeModal()">OK, got it</button></div>`);
+
+function vSubjectSelection() {
+    let totalUnitsSelected = enrolledSubjectCodes.reduce((sum, code) => {
+        let subj = availableSubjects.find(s => s.code === code);
+        return sum + (subj ? subj.units : 0);
+    }, 0);
+
+    let rows = availableSubjects.map(subj => {
+        let isSelected = enrolledSubjectCodes.includes(subj.code);
+        return `
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 12px; font-family: monospace; font-weight: 600; color: #60a5fa;">${subj.code}</td>
+            <td style="padding: 12px;">${subj.title}</td>
+            <td style="padding: 12px; font-weight: 500;">${subj.units}</td>
+            <td style="padding: 12px;" class="mu">${subj.prereq}</td>
+            <td style="padding: 12px; text-align: right;">
+                <button onclick="toggleSubjectSelection('${subj.code}')" style="background: ${isSelected ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 130, 246, 0.15)'}; color: ${isSelected ? '#f87171' : '#60a5fa'}; border: 1px solid ${isSelected ? 'rgba(239, 68, 68, 0.3)' : 'rgba(59, 130, 246, 0.3)'}; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                    ${isSelected ? 'Drop' : 'Select'}
+                </button>
+            </td>
+        </tr>`;
+    }).join("");
+
+    return `
+    <section class="card" style="border-top: 3px solid #3b82f6;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+                <h3>📚 Subject Enlistment</h3>
+                <small class="mu">Select subjects for your enrollment application (Max 21 units).</small>
+            </div>
+            <div style="text-align: right; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 8px 16px; border-radius: 8px;">
+                <small class="mu" style="display: block; text-transform: uppercase; font-size: 10px;">Total Units</small>
+                <span style="font-size: 1.25rem; font-weight: bold; color: #60a5fa; font-family: monospace;">${totalUnitsSelected} <span style="font-size: 0.85rem; color: var(--mu);">/ 21 Max</span></span>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--mu); font-size: 0.85rem;">
+                        <th style="padding: 10px;">Code</th>
+                        <th style="padding: 10px;">Title</th>
+                        <th style="padding: 10px;">Units</th>
+                        <th style="padding: 10px;">Prerequisite</th>
+                        <th style="padding: 10px; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+            <button class="p" onclick="submitEnlistmentToDatabase()" style="font-weight: 600; padding: 10px 20px;">Submit Enrollment</button>
+        </div>
+    </section>`;
 }
-async function resendMail(){
- const{error}=await sb.auth.resend({type:"signup",email:pendingEmail});
- toast(error?error.message:"Confirmation email sent again.",!!error);
+
+async function submitEnlistmentToDatabase() {
+    if (enrolledSubjectCodes.length === 0) {
+        return toast("Please select at least one subject.", 1);
+    }
+
+    const { error } = await sb.rpc("submit_enrollment", {
+        codes: enrolledSubjectCodes
+    });
+
+    if (error) {
+        return toast(error.message, 1);
+    }
+
+    toast("Enrollment submitted successfully!");
+    enrolledSubjectCodes = [];
+    setStudentTab("overview");
 }
-async function loadMe(){const{data:{user}}=await sb.auth.getUser();if(!user){me=null;return}const{data,error}=await sb.from("profiles").select("*").eq("id",user.id).single();me=error?null:data}
-function setMode(m){mode=m;render()}
-async function login(){const{error}=await sb.auth.signInWithPassword({email:$("#u").value.trim(),password:$("#p").value});if(error)return toast(/confirm/i.test(error.message)?"Please confirm your email first. Check your inbox and spam folder.":error.message,1);await loadMe();render()}
-async function logout(){await sb.auth.signOut();me=null;tab="dash";render()}
-async function register(){const v=i=>$("#"+i).value,name=v("rn").trim(),email=v("re").trim(),pw=v("rw");
- if(name.length<3)return toast("Enter your full name.",1);
- if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return toast("Enter a valid email address.",1);
- if(pw.length<8||!/[A-Za-z]/.test(pw)||!/\d/.test(pw))return toast("Password needs 8+ characters with letters and digits.",1);
- if(pw!==v("rw2"))return toast("Passwords do not match.",1);
- const{data,error}=await sb.auth.signUp({email,password:pw,options:{emailRedirectTo:location.origin+location.pathname,data:{full_name:name,program:v("rg")}}});
- if(error)return toast(error.message,1);
- if(data.user&&data.user.identities&&data.user.identities.length===0)return toast("This email is already registered. Try signing in instead.",1);
- if(data.session){await loadMe();toast("Account created. Welcome!");render()}else{mode="in";render();pendingEmail=email;mailModal(email)}}
-const greet=()=>`<div class="hd"><h1>Welcome, ${esc(me.full_name.split(" ")[0]||me.role)}</h1><span class="mu">${{Student:"Enroll in subjects and track your grades.",Admin:"Manage enrollments, payments, grades, subjects and users."}[me.role]}</span></div>`;
-function vSetup(){return `<div class="card" style="max-width:640px;margin:30px auto"><h2>Setup needed</h2><p>Open <b>index.html</b>, find <code>CFG</code> near the top of the script and paste your Supabase <b>Project URL</b> and <b>anon key</b>. See README.md for the full steps.</p></div>`}
-function vLogin(){const reg=mode==="up";return `<div class="auth"><section class="hero"><i class="lg">S</i><h1>Enroll online.<br>Skip the line.</h1><p>One secure portal for students and school administrators.</p><div class="chips"><span>Prerequisite checks</span><span>Payment verification</span><span>Admin approval</span><span>Instant grades</span></div></section>
-<section class="card form"><div class="tabs"><button class="${reg?"":"on"}" onclick="setMode('in')">Sign in</button><button class="${reg?"on":""}" onclick="setMode('up')">Register</button></div>`+(reg?
-`<label>Full name</label><input id="rn" autocomplete="name"><label>Email</label><input id="re" type="email" autocomplete="email"><label>Program</label><select id="rg"><option>BS Information Technology</option><option>BS Computer Science</option><option>BS Information Systems</option></select><div class="row"><div><label>Password</label><input id="rw" type="password" autocomplete="new-password"></div><div><label>Confirm password</label><input id="rw2" type="password" autocomplete="new-password" onkeydown="event.key==='Enter'&&register()"></div></div><label class="show"><input type="checkbox" onchange="showPw(this.checked)">Show passwords</label><p class="mu">8+ characters with letters and digits. Your Student ID is generated for you.</p><button class="p w" onclick="register()">Create student account</button>`:
-`<label>Email</label><input id="u" type="email" autocomplete="username"><label>Password</label><input id="p" type="password" autocomplete="current-password" onkeydown="event.key==='Enter'&&login()"><label class="show"><input type="checkbox" onchange="showPw(this.checked)">Show password</label><p><button class="p w" onclick="login()">Sign in</button></p>`)+`</section></div>`}
-function downloadSlip(){
- if(!SLIP||typeof window.jspdf==="undefined")return toast("PDF tool is not available right now.",1);
- const{enr,subs}=SLIP,d=new window.jspdf.jsPDF();
- let y=22,total=0;
- const line=t=>{d.text(t,20,y);y+=8};
- d.setFontSize(18);d.text("SEMS Enrollment Slip",20,y);y+=12;
- d.setFontSize(11);
- line("Student: "+me.full_name);
- line("Student ID: "+me.student_no);
- line("Program: "+me.program);
- line("Enrollment no: "+enr.id);
- line("Status: "+enr.status);
- line("Payment: "+(enr.paid?"Paid, OR "+enr.or_no:"Unpaid"));
- y+=4;
- d.setFontSize(13);line("Subjects");d.setFontSize(11);
- for(const c of codes(enr)){
-  const s=subs.find(x=>x.code===c);
-  total+=s.units;
-  line(c+"   "+s.title+"   "+s.units+" units");
- }
- y+=2;
- line("Total units: "+total);
- line("Assessed fee: PHP "+Number(enr.fee).toLocaleString());
- y+=6;
- d.setFontSize(9);d.text("Generated on "+new Date().toLocaleString(),20,y);
- d.save("enrollment-slip-"+me.student_no+".pdf");
-}
-async function vStudent(){
- const[subs,enr,gr]=await Promise.all([q(sb.from("subjects").select("*").order("code")),q(sb.from("enrollments").select("*,enrollment_items(subject_code)").order("id")),q(sb.from("grades").select("*"))]);SUBS=subs;
- const sub=c=>subs.find(s=>s.code===c),pass=c=>gr.some(g=>g.subject_code===c&&g.grade<=3);
- const cur=enr.find(e=>e.status!=="Rejected"),last=enr[enr.length-1];
- SLIP=cur?{enr:cur,subs}:null;
- const done=!cur?0:cur.status==="Approved"?4:cur.paid?3:2;
- const names=["Pick subjects","Submit request","Payment recorded","Approved"];
- const tips=["Choose your subjects below, then press Submit enrollment.","Choose your subjects below, then press Submit enrollment.","Your request is in. Next, the admin records your payment.","Payment is recorded. Now wait for the admin to approve your enrollment.","You are officially enrolled. Download your slip and check your grades below."];
- const steps=`<div class="steps">${names.map((n,i)=>`<div class="stp ${i<done?"done":i===done?"now":""}"><i>${i<done?"✓":i+1}</i>${n}</div>`).join("")}</div><p class="hint">${tips[done]}</p>`;
- const tu=gr.reduce((a,g)=>a+sub(g.subject_code).units,0),gwa=gr.length?(gr.reduce((a,g)=>a+g.grade*sub(g.subject_code).units,0)/tu).toFixed(2):"–";
- let enrl;
- if(cur)enrl=table(["Subject","Units"],codes(cur).map(s=>`<tr><td>${s} – ${esc(sub(s).title)}</td><td>${sub(s).units}</td></tr>`),"")+`<p>Status: ${tag(cur.status)} Payment: ${tag(cur.paid?"Paid":"Unpaid")} <span class="mu">Assessed fee ${peso(cur.fee)}${cur.or_no?" · OR "+esc(cur.or_no):""}</span></p><button class="p" onclick="downloadSlip()">Download enrollment slip (PDF)</button>`;
- else enrl=(last?`<p class="mu">Last request rejected: ${esc(last.note)}</p>`:"")+subs.filter(s=>!pass(s.code)).map(s=>{const ok=!s.prereq||pass(s.prereq);return `<label class="chk ${ok?"":"off"}"><input type="checkbox" class="sub" value="${s.code}" ${ok?"":"disabled"} onchange="calc()"><span>${s.code} – ${esc(s.title)} <span class="mu">(${s.units} units${s.prereq?" · prereq "+s.prereq:""}${ok?"":" – not met"})</span></span></label>`}).join("")+`<p>Selected: <b id="tu">0</b> units · Estimated fee: <b id="tf">${peso(0)}</b> <span class="mu">(₱1,000/unit + ₱1,500 misc.)</span><span id="wl" style="color:var(--bad);font-weight:600"></span></p><button class="p" onclick="submitEnroll()">Submit enrollment</button>`;
- const grows=gr.map(g=>`<tr><td>${g.subject_code} – ${esc(sub(g.subject_code).title)}</td><td>${Number(g.grade).toFixed(2)}</td><td>${tag(g.grade<=3?"Passed":"Failed")}</td></tr>`);
- return `<div class="stats"><div class="stat"><span class="mu">Student ID</span><b style="font-size:17px">${esc(me.student_no)}</b></div><div class="stat"><span class="mu">Program</span><b style="font-size:15px">${esc(me.program)}</b></div><div class="stat"><span class="mu">GWA</span><b>${gwa}</b></div></div>
-<div class="card"><h2>Online enrollment</h2>${steps}${enrl}</div>
-<div class="card"><h2>Grades</h2>${table(["Subject","Grade","Remarks"],grows,"No grades yet.")}</div>`}
-function calc(){const cs=[...document.querySelectorAll(".sub:checked")].map(x=>x.value),u=cs.reduce((a,c)=>a+SUBS.find(s=>s.code===c).units,0);$("#tu").textContent=u;$("#tu").style.color=u>21?"var(--bad)":"";$("#wl").textContent=u>21?" Maximum load is 21 units.":"";$("#tf").textContent=peso(cs.length?u*1000+1500:0)}
-const submitEnroll=()=>call(sb.rpc("submit_enrollment",{codes:[...document.querySelectorAll(".sub:checked")].map(x=>x.value)}),"Enrollment submitted. Please wait for the admin to verify your payment.");
-const allEnr=()=>q(sb.from("enrollments").select("*,profiles(full_name,student_no),enrollment_items(subject_code)").order("id",{ascending:false}));
-const pay=id=>{
- const v=$("#or"+id).value.trim();
- if(!v)return toast("Type the official receipt number first.",1);
- call(sb.rpc("record_payment",{eid:id,or_no:v}),"Payment recorded.");
-};
-const decide=(id,ok)=>{
- const n=$("#n"+id).value.trim();
- if(!ok&&!n)return toast("Type a reason in the box before rejecting.",1);
- if(!confirm((ok?"Approve":"Reject")+" enrollment #"+id+"?"))return;
- call(sb.rpc("decide_enrollment",{eid:id,approve:ok,note:ok?"":n}),"Enrollment "+(ok?"approved":"rejected")+".");
-};
-const postGrade=(sid,code)=>{
- const g=parseFloat($("#g"+sid.slice(0,8)+code).value);
- if(isNaN(g)||g<1||g>5)return toast("Enter a grade from 1.0 to 5.0.",1);
- call(sb.rpc("post_grade",{sid,code,g}),"Grade posted to the student portal.");
-};
-const setTab=t=>{tab=t;window.scrollTo({top:0,behavior:"smooth"});render()};
-const setRole=id=>call(sb.rpc("admin_set_role",{p_uid:id,p_role:el("ro"+id).value}),"Role updated.");
-const saveSubject=()=>call(sb.rpc("admin_save_subject",{p_code:el("sc").value,p_title:el("st").value,p_units:parseInt(el("su").value),p_prereq:el("sp").value}),"Subject saved.");
-const fillSub=c=>{const x=SUBS.find(y=>y.code===c);el("sc").value=x.code;el("st").value=x.title;el("su").value=x.units;el("sp").value=x.prereq||"";el("sc").scrollIntoView({behavior:"smooth",block:"center"})};
-function drawCharts(stat,bySub){
- if(typeof Chart==="undefined")return;
- const cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
- const tx=cv("--tx"),bd=cv("--bd");
- charts.forEach(c=>c.destroy());charts=[];
- charts.push(new Chart(el("c1"),{type:"doughnut",data:{labels:["Pending","Approved","Rejected"],datasets:[{data:[stat.Pending,stat.Approved,stat.Rejected],backgroundColor:[cv("--wn"),cv("--ok"),cv("--bad")],borderColor:cv("--card")}]},options:{maintainAspectRatio:false,plugins:{legend:{labels:{color:tx}}}}}));
- charts.push(new Chart(el("c2"),{type:"bar",data:{labels:bySub.map(x=>x[0]),datasets:[{label:"Students enrolled",data:bySub.map(x=>x[1]),backgroundColor:cv("--ac"),borderRadius:6}]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tx},grid:{color:bd}},y:{beginAtZero:true,ticks:{color:tx,precision:0},grid:{color:bd}}}}}));
-}
-async function aDa(){
- const[e,st,lg]=await Promise.all([allEnr(),q(sb.from("profiles").select("*").eq("role","Student").order("created_at",{ascending:false})),q(sb.from("audit_log").select("*,profiles(full_name)").order("id",{ascending:false}).limit(6))]);
- const stat={Pending:0,Approved:0,Rejected:0},counts={},enrolled=new Set();
- let collected=0,paidCount=0;
- for(const x of e){
-  stat[x.status]++;
-  if(x.paid){collected+=Number(x.fee);paidCount++}
-  if(x.status!=="Rejected"){enrolled.add(x.student_id);for(const c of codes(x))counts[c]=(counts[c]||0)+1}
- }
- const total=e.length||1,pending=e.filter(x=>x.status==="Pending"),unpaid=pending.filter(x=>!x.paid).length;
- const bySub=Object.entries(counts).sort((a,b)=>a[0].localeCompare(b[0]));
- after=()=>drawCharts(stat,bySub);
- const hr=new Date().getHours(),greeting=hr<12?"Good morning":hr<18?"Good afternoon":"Good evening";
- const today=new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
- const msg=pending.length?`${pending.length} enrollment request${pending.length>1?"s are":" is"} waiting for you, and ${unpaid} still need${unpaid===1?"s":""} a payment record.`:"You are all caught up. There are no pending enrollment requests.";
- const banner=`<div class="banner"><div><span class="bd">${today}</span><h2>${greeting}, ${esc(me.full_name.split(" ")[0]||"Admin")}</h2><p>${msg}</p></div><div class="bb"><button onclick="setTab('enr')">Review requests</button><button class="solid" onclick="setTab('gr')">Post grades</button></div></div>`;
- const card=(cls,icon,label,val,to,pct,cap,small)=>`<div class="sc ${cls}"><div class="sct">${ring(pct,icon)}<div><b${small?` style="font-size:21px"`:""}>${val}</b><span class="l">${label}</span><span class="cap">${cap}</span></div></div><button onclick="setTab('${to}')"><span>View details</span>${ic("arrow",14)}</button></div>`;
- const pc=n=>Math.round(n/total*100);
- const stuPct=st.length?Math.round(enrolled.size/st.length*100):0;
- const cards=card("","us","Total students",st.length,"us",stuPct,stuPct+"% have enrolled")+card("w","enr","Pending requests",stat.Pending,"enr",pc(stat.Pending),pc(stat.Pending)+"% of all requests")+card("b","warn","Awaiting payment",unpaid,"enr",pc(unpaid),pc(unpaid)+"% of all requests")+card("o","ok","Approved",stat.Approved,"gr",pc(stat.Approved),pc(stat.Approved)+"% of all requests")+card("v","cash","Total collected",peso(collected),"enr",pc(paidCount),pc(paidCount)+"% of requests paid",1);
- const queue=pending.length?pending.slice(0,5).map(x=>`<div class="qi">${avatar(x.profiles.full_name)}<div class="qm"><b>${esc(x.profiles.full_name)}</b><span class="mu">${codes(x).join(", ")} · ${peso(x.fee)}</span></div>${tag(x.paid?"Paid":"Unpaid")}<button onclick="setTab('enr')">Review</button></div>`).join(""):`<p class="mu">Nothing to review right now.</p>`;
- const feed=lg.length?lg.map(l=>`<div class="ti"><i></i><div><b>${esc(l.action)}</b><span class="mu">${esc(l.profiles?.full_name||"System")} · ${ago(l.created_at)}</span></div></div>`).join(""):`<p class="mu">No activity yet.</p>`;
- const rows=st.map((u,i)=>`<tr><td>${i+1}</td><td><div class="who">${avatar(u.full_name)}<div>${esc(u.full_name)}<div class="mu">${esc(u.email)}</div></div></div></td><td>${esc(u.student_no||"")}</td><td>${esc(u.program)}</td><td data-order="${esc(u.created_at)}">${esc(new Date(u.created_at).toLocaleDateString())}</td></tr>`);
- return `${banner}<div class="sgrid">${cards}</div>
+
+        function vStudentDashboard() {
+            const user = me || {};
+            const meta = user.user_metadata || {};
+            const fullName = user.full_name || meta.full_name || "Student";
+            const program = user.program || meta.program || "BS Information Technology";
+            const status = user.enrollment_status || meta.enrollment_status || "Pending Verification";
+            const totalUnits = user.total_units || meta.total_units || 0;
+
+            let content = "";
+
+            if (studentTab === "overview") {
+                content = `
+        <div class="row" style="gap: 16px; margin-bottom: 20px;">
+            <section class="card" style="position: relative; overflow: hidden; border-left: 4px solid #3b82f6; flex: 1;">
+                <div style="position: absolute; right: 16px; top: 16px; opacity: 0.15; font-size: 3rem;">⚡</div>
+                <small class="mu" style="text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Status</small>
+                <h2 style="margin: 8px 0; color: #60a5fa; font-family: monospace;">${status}</h2>
+                <small class="mu">Academic Year 2026-2027 • 1st Semester</small>
+            </section>
+            
+            <section class="card" style="position: relative; overflow: hidden; border-left: 4px solid #10b981; flex: 1;">
+                <div style="position: absolute; right: 16px; top: 16px; opacity: 0.15; font-size: 3rem;">📚</div>
+                <small class="mu" style="text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Load Units</small>
+                <h2 style="margin: 8px 0; color: #34d399; font-family: monospace;">${totalUnits} <span style="font-size: 1rem; color: var(--mu);">/ 24 Max</span></h2>
+                <small class="mu">${program}</small>
+            </section>
+        </div>
+
+        <section class="card" style="border: 1px solid rgba(59, 130, 246, 0.2);">
+            <h3 style="display: flex; align-items: center; gap: 8px;">
+                <span>🚀</span> Enrollment Pipeline
+            </h3>
+            <div class="chips" style="margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 6px 12px; border-radius: 6px; font-weight: 500;">1. Account Configured ✓</span>
+                <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 6px 12px; border-radius: 6px; font-weight: 500;">2. Subject Enlistment</span>
+                <span style="opacity: 0.5; padding: 6px 12px;">3. Assessment & Payment</span>
+                <span style="opacity: 0.5; padding: 6px 12px;">4. COR Generation</span>
+            </div>
+        </section>`;
+            } else if (studentTab === "enroll") {
+                content = typeof vSubjectSelection === "function" ? vSubjectSelection() : `
+        <section class="card">
+            <h3>Subject Enlistment Module</h3>
+            <p class="mu">Select your curriculum subjects securely for the current term.</p>
+        </section>`;
+            } else if (studentTab === "profile") {
+                content = vProfile();
+            }
+
+            return `
+    <div style="max-width: 1100px; margin: 0 auto; padding: 10px;">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 42px; height: 42px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; color: #fff; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                    ${fullName.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                    <h2 style="margin: 0; font-size: 1.25rem; letter-spacing: -0.5px;">${fullName}</h2>
+                    <small class="mu" style="font-family: monospace;">${program}</small>
+                </div>
+            </div>
+            <button onclick="logout()" style="background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2);">Terminate Session</button>
+        </header>
+
+        <div class="tabs" style="margin-bottom: 24px; display: flex; gap: 8px;">
+            <button class="${studentTab === "overview" ? "on" : ""}" onclick="setStudentTab('overview')">⚡ Dashboard</button>
+            <button class="${studentTab === "enroll" ? "on" : ""}" onclick="setStudentTab('enroll')">📚 Enlistment</button>
+            <button class="${studentTab === "profile" ? "on" : ""}" onclick="setStudentTab('profile')">🛡️ Security & Profile</button>
+        </div>
+
+        ${content}
+    </div>`;
+        }
+
+        function vProfile() {
+            const user = me || {};
+            const meta = user.user_metadata || {};
+            const fullName = user.full_name || meta.full_name || "Student";
+            const program = user.program || meta.program || "BS Information Technology";
+            const studentId = user.student_id || meta.student_id || (user.id ? user.id.slice(0, 8).toUpperCase() : "SEMS-STU");
+
+            return `
+    <div class="row" style="align-items: start; gap: 20px;">
+        <section class="card form" style="flex: 1; border-top: 3px solid #3b82f6;">
+            <h3 style="margin-bottom: 16px;">👤 Credentials & Identity</h3>
+            
+            <label style="font-weight: 500;">Student System ID</label>
+            <input type="text" value="${studentId}" disabled style="opacity: 0.6; font-family: monospace; letter-spacing: 1px;">
+            
+            <label style="font-weight: 500; margin-top: 12px;">Full Legal Name</label>
+            <input id="prof-name" type="text" value="${fullName}">
+            
+            <label style="font-weight: 500; margin-top: 12px;">Institutional Email</label>
+            <input type="email" value="${user.email || ''}" disabled style="opacity: 0.6; font-family: monospace;">
+            
+            <label style="font-weight: 500; margin-top: 12px;">Enrolled Program</label>
+            <input type="text" value="${program}" disabled style="opacity: 0.6;">
+            
+            <button class="p w" style="margin-top: 20px; font-weight: 600;" onclick="updateStudentProfile()">Commit Profile Changes</button>
+        </section>
+
+        <section class="card form" style="flex: 1; border-top: 3px solid #10b981;">
+            <h3 style="margin-bottom: 16px;">🔒 Authentication Security</h3>
+            
+            <label style="font-weight: 500;">New Account Password</label>
+            <input id="new-pw" type="password" autocomplete="new-password" placeholder="••••••••" oninput="checkNewPwStrength()">
+            <small id="new-pw-hint" class="mu" style="display:block; margin-top:6px; font-size:11.5px;">Must be 8+ characters with uppercase, lowercase & numbers</small>
+            
+            <label style="font-weight: 500; margin-top: 16px;">Verify New Password</label>
+            <input id="confirm-new-pw" type="password" autocomplete="new-password" placeholder="••••••••">
+            
+            <button class="p w" style="margin-top: 20px; font-weight: 600; background: #059669;" onclick="updateStudentPassword()">Update Master Password</button>
+        </section>
+    </div>`;
+        }
+
+        function checkNewPwStrength() {
+            const pw = $("#new-pw").value;
+            const hint = $("#new-pw-hint");
+            if (!hint) return;
+
+            const hasLen = pw.length >= 8;
+            const hasLetter = /[A-Za-z]/.test(pw);
+            const hasNum = /\d/.test(pw);
+
+            if (pw.length === 0) {
+                hint.style.color = "var(--mu)";
+                hint.textContent = "Must be 8+ characters with letters & numbers";
+                return;
+            }
+
+            if (hasLen && hasLetter && hasNum) {
+                hint.style.color = "#34d399";
+                hint.textContent = "✓ Password security optimal";
+            } else {
+                hint.style.color = "#f87171";
+                let missing = [];
+                if (!hasLen) missing.push("8+ chars");
+                if (!hasLetter) missing.push("letters");
+                if (!hasNum) missing.push("numbers");
+                hint.textContent = "Insecure: missing " + missing.join(", ");
+            }
+        }
+
+        async function updateStudentProfile() {
+            const newName = $("#prof-name").value.trim();
+            if (!newName) return toast("Name field cannot be left blank.", 1);
+
+            const { data, error } = await sb.auth.updateUser({
+                data: { full_name: newName }
+            });
+
+            if (error) return toast(error.message, 1);
+
+            if (typeof loadMe === "function") await loadMe();
+            toast("Student profile updated successfully!");
+            render();
+        }
+
+        async function updateStudentPassword() {
+            const pw = $("#new-pw").value;
+            const pw2 = $("#confirm-new-pw").value;
+
+            if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/\d/.test(pw)) {
+                return toast("Weak password: Minimum 8 characters with letters and numbers required.", 1);
+            }
+            if (pw !== pw2) {
+                return toast("Password mismatch: Please verify confirmation inputs.", 1);
+            }
+
+            const { data, error } = await sb.auth.updateUser({
+                password: pw
+            });
+
+            if (error) return toast(error.message, 1);
+
+            $("#new-pw").value = "";
+            $("#confirm-new-pw").value = "";
+            checkNewPwStrength();
+            toast("Master password updated securely!");
+        }
+
+        function calc() { const cs = [...document.querySelectorAll(".sub:checked")].map(x => x.value), u = cs.reduce((a, c) => a + SUBS.find(s => s.code === c).units, 0); $("#tu").textContent = u; $("#tf").textContent = peso(cs.length ? u * 1000 + 1500 : 0) }
+        const submitEnroll = () => call(sb.rpc("submit_enrollment", { codes: [...document.querySelectorAll(".sub:checked")].map(x => x.value) }), "Enrollment submitted. Please wait for the admin to verify your payment.");
+        const allEnr = () => q(sb.from("enrollments").select("*,profiles(full_name,student_no),enrollment_items(subject_code)").order("id", { ascending: false }));
+        const pay = id => call(sb.rpc("record_payment", { eid: id, or_no: $("#or" + id).value.trim() }), "Payment recorded.");
+        const decide = (id, ok) => call(sb.rpc("decide_enrollment", { eid: id, approve: ok, note: ok ? "" : $("#n" + id).value }), "Enrollment " + (ok ? "approved" : "rejected") + ".");
+        const postGrade = (sid, code) => call(sb.rpc("post_grade", { sid, code, g: parseFloat($("#g" + sid.slice(0, 8) + code).value) }), "Grade posted to the student portal.");
+        const setTab = t => { tab = t; render() };
+        const setRole = id => call(sb.rpc("admin_set_role", { p_uid: id, p_role: el("ro" + id).value }), "Role updated.");
+        const saveSubject = () => call(sb.rpc("admin_save_subject", { p_code: el("sc").value, p_title: el("st").value, p_units: parseInt(el("su").value), p_prereq: el("sp").value }), "Subject saved.");
+        const fillSub = c => { const x = SUBS.find(y => y.code === c); el("sc").value = x.code; el("st").value = x.title; el("su").value = x.units; el("sp").value = x.prereq || ""; el("sc").scrollIntoView({ behavior: "smooth", block: "center" }) };
+        function drawCharts(stat, bySub) {
+            if (typeof Chart === "undefined") return;
+            const cv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+            const tx = cv("--tx"), bd = cv("--bd");
+            charts.forEach(c => c.destroy()); charts = [];
+            charts.push(new Chart(el("c1"), { type: "doughnut", data: { labels: ["Pending", "Approved", "Rejected"], datasets: [{ data: [stat.Pending, stat.Approved, stat.Rejected], backgroundColor: [cv("--wn"), cv("--ok"), cv("--bad")], borderColor: cv("--card") }] }, options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: tx } } } } }));
+            charts.push(new Chart(el("c2"), { type: "bar", data: { labels: bySub.map(x => x[0]), datasets: [{ label: "Students enrolled", data: bySub.map(x => x[1]), backgroundColor: cv("--ac"), borderRadius: 6 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: tx }, grid: { color: bd } }, y: { beginAtZero: true, ticks: { color: tx, precision: 0 }, grid: { color: bd } } } } }));
+        }
+        async function aDa() {
+            const [e, st, lg] = await Promise.all([allEnr(), q(sb.from("profiles").select("*").eq("role", "Student").order("created_at", { ascending: false })), q(sb.from("audit_log").select("*,profiles(full_name)").order("id", { ascending: false }).limit(6))]);
+            const stat = { Pending: 0, Approved: 0, Rejected: 0 }, counts = {}, enrolled = new Set();
+            let collected = 0, paidCount = 0;
+            for (const x of e) {
+                stat[x.status]++;
+                if (x.paid) { collected += Number(x.fee); paidCount++ }
+                if (x.status !== "Rejected") { enrolled.add(x.student_id); for (const c of codes(x)) counts[c] = (counts[c] || 0) + 1 }
+            }
+            const total = e.length || 1, pending = e.filter(x => x.status === "Pending"), unpaid = pending.filter(x => !x.paid).length;
+            const bySub = Object.entries(counts).sort((a, b) => a[0].localeCompare(b[0]));
+            after = () => drawCharts(stat, bySub);
+            const hr = new Date().getHours(), greeting = hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
+            const today = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+            const msg = pending.length ? `${pending.length} enrollment request${pending.length > 1 ? "s are" : " is"} waiting for you, and ${unpaid} still need${unpaid === 1 ? "s" : ""} a payment record.` : "You are all caught up. There are no pending enrollment requests.";
+            const banner = `<div class="banner"><div><span class="bd">${today}</span><h2>${greeting}, ${esc(me.full_name.split(" ")[0] || "Admin")}</h2><p>${msg}</p></div><div class="bb"><button onclick="setTab('enr')">Review requests</button><button class="solid" onclick="setTab('gr')">Post grades</button></div></div>`;
+            const card = (cls, icon, label, val, to, pct, cap, small) => `<div class="sc ${cls}"><div class="sct">${ring(pct, icon)}<div><b${small ? ` style="font-size:21px"` : ""}>${val}</b><span class="l">${label}</span><span class="cap">${cap}</span></div></div><button onclick="setTab('${to}')"><span>View details</span>${ic("arrow", 14)}</button></div>`;
+            const pc = n => Math.round(n / total * 100);
+            const stuPct = st.length ? Math.round(enrolled.size / st.length * 100) : 0;
+            const cards = card("", "us", "Total students", st.length, "us", stuPct, stuPct + "% have enrolled") + card("w", "enr", "Pending requests", stat.Pending, "enr", pc(stat.Pending), pc(stat.Pending) + "% of all requests") + card("b", "warn", "Awaiting payment", unpaid, "enr", pc(unpaid), pc(unpaid) + "% of all requests") + card("o", "ok", "Approved", stat.Approved, "gr", pc(stat.Approved), pc(stat.Approved) + "% of all requests") + card("v", "cash", "Total collected", peso(collected), "enr", pc(paidCount), pc(paidCount) + "% of requests paid", 1);
+            const queue = pending.length ? pending.slice(0, 5).map(x => `<div class="qi">${avatar(x.profiles.full_name)}<div class="qm"><b>${esc(x.profiles.full_name)}</b><span class="mu">${codes(x).join(", ")} · ${peso(x.fee)}</span></div>${tag(x.paid ? "Paid" : "Unpaid")}<button onclick="setTab('enr')">Review</button></div>`).join("") : `<p class="mu">Nothing to review right now.</p>`;
+            const feed = lg.length ? lg.map(l => `<div class="ti"><i></i><div><b>${esc(l.action)}</b><span class="mu">${esc(l.profiles?.full_name || "System")} · ${ago(l.created_at)}</span></div></div>`).join("") : `<p class="mu">No activity yet.</p>`;
+            const rows = st.map((u, i) => `<tr><td>${i + 1}</td><td><div class="who">${avatar(u.full_name)}<div>${esc(u.full_name)}<div class="mu">${esc(u.email)}</div></div></div></td><td>${esc(u.student_no || "")}</td><td>${esc(u.program)}</td><td data-order="${esc(u.created_at)}">${esc(new Date(u.created_at).toLocaleDateString())}</td></tr>`);
+            return `${banner}<div class="sgrid">${cards}</div>
 <div class="two"><div class="card"><h2>Needs your attention</h2>${queue}</div><div class="card"><h2>Recent activity</h2><div class="tl">${feed}</div></div></div>
 <div class="charts"><div class="card"><h2>Enrollment status</h2><div class="cbox"><canvas id="c1"></canvas></div></div><div class="card"><h2>Enrollments per subject</h2><div class="cbox"><canvas id="c2"></canvas></div></div></div>
-<div class="card"><h2>Newest students</h2>${table(["#","Student","Student ID","Program","Registered"],rows,"No students have registered yet.",true)}</div>`}
-async function aEnr(){
- const e=await allEnr();
- const rows=e.map(x=>`<tr><td>${esc(x.profiles.full_name)}<div class="mu">#${x.id} · ${esc(x.profiles.student_no)}</div></td><td>${codes(x).join(", ")}</td><td>${peso(x.fee)}</td><td>${x.paid?tag("Paid")+`<div class="mu">OR ${esc(x.or_no)}</div>`:(x.status==="Pending"?`<div class="inl"><input id="or${x.id}" placeholder="OR-0001"><button class="g" onclick="pay(${x.id})">Record</button></div>`:tag("Unpaid"))}</td><td>${x.status==="Pending"?`<div class="inl"><button class="g" onclick="decide(${x.id},true)">Approve</button><input id="n${x.id}" placeholder="Reason if rejecting"><button class="d" onclick="decide(${x.id},false)">Reject</button></div>`:tag(x.status)}</td></tr>`);
- return `<div class="card"><h2>Enrollment requests</h2><p class="mu">Record the student's payment first, then approve. Approval is blocked until payment is recorded.</p>${table(["Student","Subjects","Fee",["Payment"],["Decision"]],rows,"No enrollment requests yet.",true)}</div>`}
-async function aGr(){
- const[items,gr]=await Promise.all([q(sb.from("enrollment_items").select("subject_code,enrollments!inner(student_id,status,profiles(full_name,student_no))").eq("enrollments.status","Approved").order("subject_code")),q(sb.from("grades").select("*"))]);
- const rows=items.map(x=>{const sid=x.enrollments.student_id,g=gr.find(y=>y.student_id===sid&&y.subject_code===x.subject_code);return `<tr><td>${x.subject_code}</td><td>${esc(x.enrollments.profiles.full_name)}<div class="mu">${esc(x.enrollments.profiles.student_no)}</div></td><td style="width:120px"><input id="g${sid.slice(0,8)}${x.subject_code}" type="number" step="0.25" min="1" max="5" value="${g?g.grade:""}"></td><td><button class="p" onclick="postGrade('${sid}','${x.subject_code}')">Post</button></td></tr>`});
- return `<div class="card"><h2>Post grades</h2><p class="mu">Only officially enrolled (approved) students appear here. Grades go straight to the student portal.</p>${table(["Subject","Student",["Grade"],[""]],rows,"No approved enrollments yet.",true)}</div>`}
-async function aUs(){
- const us=await q(sb.from("profiles").select("*").order("created_at"));
- const rows=us.map(u=>`<tr><td>${esc(u.full_name)}<div class="mu">${esc(u.student_no||"")}</div></td><td>${esc(u.email)}</td><td><select id="ro${u.id}" ${u.id===me.id?"disabled":""}>${["Student","Admin"].map(r=>`<option ${r===u.role?"selected":""}>${r}</option>`).join("")}</select></td><td>${u.id===me.id?`<span class="mu">You</span>`:`<button class="p" onclick="setRole('${u.id}')">Save</button>`}</td></tr>`);
- return `<div class="card"><h2>User accounts</h2><p class="mu">New users register as Students. Make someone an Admin here.</p>${table(["Name","Email",["Role"],[""]],rows,"No users yet.",true)}</div>`}
-async function aSu(){
- const subs=await q(sb.from("subjects").select("*").order("code"));SUBS=subs;
- const rows=subs.map(x=>`<tr><td>${x.code} – ${esc(x.title)}</td><td>${x.units}</td><td>${x.prereq||"–"}</td><td><button onclick="fillSub('${x.code}')">Edit</button></td></tr>`);
- return `<div class="card"><h2>Subjects</h2>${table(["Subject","Units","Prerequisite",[""]],rows,"No subjects yet.",true)}</div>
-<div class="card"><h2>Add or edit a subject</h2><div class="row"><div><label>Code</label><input id="sc" placeholder="ITEC206"></div><div><label>Title</label><input id="st"></div><div><label>Units</label><input id="su" type="number" min="1" max="6" value="3"></div><div><label>Prerequisite</label><select id="sp"><option value="">None</option>${subs.map(x=>`<option>${x.code}</option>`).join("")}</select></div></div><p><button class="p" onclick="saveSubject()">Save subject</button> <span class="mu">An existing code updates that subject.</span></p></div>`}
-async function aLg(){
- const lg=await q(sb.from("audit_log").select("*,profiles(full_name)").order("id",{ascending:false}).limit(100));
- const rows=lg.map(l=>`<tr><td>${esc(new Date(l.created_at).toLocaleString())}</td><td>${esc(l.profiles?.full_name||"")}</td><td>${esc(l.action)}</td></tr>`);
- return `<div class="card"><h2>Audit log</h2>${table(["When","Who","Action"],rows,"No activity yet.",true)}</div>`}
-async function vAdmin(){
- const groups=[["Main",[["dash","Dashboard"]]],["Manage",[["enr","Enrollments"],["gr","Grades"]]],["Setup",[["us","Users"],["su","Subjects"],["lg","Audit log"]]]];
- const t=TITLES[tab];
- const[body,pend]=await Promise.all([{dash:aDa,enr:aEnr,gr:aGr,us:aUs,su:aSu,lg:aLg}[tab](),q(sb.from("enrollments").select("id").eq("status","Pending"))]);
- const nav=groups.map(([g,items])=>`<div class="sl">${g}</div>`+items.map(([k,l])=>`<button class="${tab===k?"on":""}" onclick="setTab('${k}')">${ic(k,18)}<span>${l}</span>${k==="enr"&&pend.length?`<em class="bdg">${pend.length}</em>`:""}</button>`).join("")).join("");
- return `<div class="shell"><aside class="side"><div class="sidehd"><i class="lg">${esc((me.full_name||"A").charAt(0).toUpperCase())}</i><div><b>${esc(me.full_name)}</b><small>Administrator</small></div></div>${nav}</aside><section class="pane"><div class="pt"><span class="pti">${ic(tab,24)}</span><div><h1>${t[0]}</h1><span class="mu">${t[1]}</span></div></div><div class="crumb">Admin / ${t[0]}</div>${body}</section></div>`}
-function enhance(){
- if(!window.jQuery||!jQuery.fn.DataTable)return;
- jQuery("table.dt").each(function(){jQuery(this).DataTable({pageLength:10,order:[],columnDefs:[{orderable:false,searchable:false,targets:"noso"}]})});
-}
-async function render(){
- after=null;
- const app=$("#app");
- $("#who").textContent=me?me.full_name+" · "+me.role:"";$("#lo").style.display=me?"":"none";
- app.classList.toggle("wide",!!me&&me.role==="Admin");
- if(!configured)return void(app.innerHTML=vSetup());
- if(!me)return void(app.innerHTML=vLogin());
- app.classList.add("busy");
- let h;try{h=(me.role==="Admin"?"":greet())+await({Student:vStudent,Admin:vAdmin}[me.role]())}catch(e){h=`<div class="card"><p>Could not load data: ${esc(e.message)}</p></div>`}
- app.innerHTML=h;
- app.classList.remove("busy");
- enhance();
- if(after)after();
-}
-const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches};
-const paintTheme=()=>{el("th").innerHTML=ic(isDark()?"sun":"moon",18)};
-function toggleTheme(){
- const t=isDark()?"light":"dark";
- document.documentElement.dataset.theme=t;
- try{localStorage.setItem("sems-theme",t)}catch(e){}
- paintTheme();
- render();
-}
-(function(){
- try{const t=localStorage.getItem("sems-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}
- paintTheme();
-})();
-(function(){
- const h=location.hostname;
- if(!h.endsWith(".github.io"))return;
- const repo=location.pathname.split("/")[1];
- const a=el("gh");
- a.href="https://github.com/"+h.split(".")[0]+(repo?"/"+repo:"");
- a.hidden=false;
-})();
-(async()=>{if(configured)await loadMe();render()})();
-</script></body></html>
+<div class="card"><h2>Newest students</h2>${table(["#", "Student", "Student ID", "Program", "Registered"], rows, "No students have registered yet.", true)}</div>`
+        }
+        async function aEnr() {
+            const e = await allEnr();
+            const rows = e.map(x => `<tr><td>${esc(x.profiles.full_name)}<div class="mu">#${x.id} · ${esc(x.profiles.student_no)}</div></td><td>${codes(x).join(", ")}</td><td>${peso(x.fee)}</td><td>${x.paid ? tag("Paid") + `<div class="mu">OR ${esc(x.or_no)}</div>` : (x.status === "Pending" ? `<div class="inl"><input id="or${x.id}" placeholder="OR-0001"><button class="g" onclick="pay(${x.id})">Record</button></div>` : tag("Unpaid"))}</td><td>${x.status === "Pending" ? `<div class="inl"><button class="g" onclick="decide(${x.id},true)">Approve</button><input id="n${x.id}" placeholder="Reason if rejecting"><button class="d" onclick="decide(${x.id},false)">Reject</button></div>` : tag(x.status)}</td></tr>`);
+            return `<div class="card"><h2>Enrollment requests</h2><p class="mu">Record the student's payment first, then approve. Approval is blocked until payment is recorded.</p>${table(["Student", "Subjects", "Fee", ["Payment"], ["Decision"]], rows, "No enrollment requests yet.", true)}</div>`
+        }
+        async function aGr() {
+            const [items, gr] = await Promise.all([q(sb.from("enrollment_items").select("subject_code,enrollments!inner(student_id,status,profiles(full_name,student_no))").eq("enrollments.status", "Approved").order("subject_code")), q(sb.from("grades").select("*"))]);
+            const rows = items.map(x => { const sid = x.enrollments.student_id, g = gr.find(y => y.student_id === sid && y.subject_code === x.subject_code); return `<tr><td>${x.subject_code}</td><td>${esc(x.enrollments.profiles.full_name)}<div class="mu">${esc(x.enrollments.profiles.student_no)}</div></td><td style="width:120px"><input id="g${sid.slice(0, 8)}${x.subject_code}" type="number" step="0.25" min="1" max="5" value="${g ? g.grade : ""}"></td><td><button class="p" onclick="postGrade('${sid}','${x.subject_code}')">Post</button></td></tr>` });
+            return `<div class="card"><h2>Post grades</h2><p class="mu">Only officially enrolled (approved) students appear here. Grades go straight to the student portal.</p>${table(["Subject", "Student", ["Grade"], [""]], rows, "No approved enrollments yet.", true)}</div>`
+        }
+        async function aUs() {
+            const us = await q(sb.from("profiles").select("*").order("created_at"));
+            const rows = us.map(u => `<tr><td>${esc(u.full_name)}<div class="mu">${esc(u.student_no || "")}</div></td><td>${esc(u.email)}</td><td><select id="ro${u.id}" ${u.id === me.id ? "disabled" : ""}>${["Student", "Admin"].map(r => `<option ${r === u.role ? "selected" : ""}>${r}</option>`).join("")}</select></td><td>${u.id === me.id ? `<span class="mu">You</span>` : `<button class="p" onclick="setRole('${u.id}')">Save</button>`}</td></tr>`);
+            return `<div class="card"><h2>User accounts</h2><p class="mu">New users register as Students. Make someone an Admin here.</p>${table(["Name", "Email", ["Role"], [""]], rows, "No users yet.", true)}</div>`
+        }
+        async function aSu() {
+            const subs = await q(sb.from("subjects").select("*").order("code")); SUBS = subs;
+            const rows = subs.map(x => `<tr><td>${x.code} – ${esc(x.title)}</td><td>${x.units}</td><td>${x.prereq || "–"}</td><td><button onclick="fillSub('${x.code}')">Edit</button></td></tr>`);
+            return `<div class="card"><h2>Subjects</h2>${table(["Subject", "Units", "Prerequisite", [""]], rows, "No subjects yet.", true)}</div>
+<div class="card"><h2>Add or edit a subject</h2><div class="row"><div><label>Code</label><input id="sc" placeholder="ITEC206"></div><div><label>Title</label><input id="st"></div><div><label>Units</label><input id="su" type="number" min="1" max="6" value="3"></div><div><label>Prerequisite</label><select id="sp"><option value="">None</option>${subs.map(x => `<option>${x.code}</option>`).join("")}</select></div></div><p><button class="p" onclick="saveSubject()">Save subject</button> <span class="mu">An existing code updates that subject.</span></p></div>`
+        }
+        async function aLg() {
+            const lg = await q(sb.from("audit_log").select("*,profiles(full_name)").order("id", { ascending: false }).limit(100));
+            const rows = lg.map(l => `<tr><td>${esc(new Date(l.created_at).toLocaleString())}</td><td>${esc(l.profiles?.full_name || "")}</td><td>${esc(l.action)}</td></tr>`);
+            return `<div class="card"><h2>Audit log</h2>${table(["When", "Who", "Action"], rows, "No activity yet.", true)}</div>`
+        }
+        async function vAdmin() {
+            const groups = [["Main", [["dash", "Dashboard"]]], ["Manage", [["enr", "Enrollments"], ["gr", "Grades"]]], ["Setup", [["us", "Users"], ["su", "Subjects"], ["lg", "Audit log"]]]];
+            const t = TITLES[tab];
+            const [body, pend] = await Promise.all([{ dash: aDa, enr: aEnr, gr: aGr, us: aUs, su: aSu, lg: aLg }[tab](), q(sb.from("enrollments").select("id").eq("status", "Pending"))]);
+            const nav = groups.map(([g, items]) => `<div class="sl">${g}</div>` + items.map(([k, l]) => `<button class="${tab === k ? "on" : ""}" onclick="setTab('${k}')">${ic(k, 18)}<span>${l}</span>${k === "enr" && pend.length ? `<em class="bdg">${pend.length}</em>` : ""}</button>`).join("")).join("");
+            return `<div class="shell"><aside class="side"><div class="sidehd"><i class="lg">${esc((me.full_name || "A").charAt(0).toUpperCase())}</i><div><b>${esc(me.full_name)}</b><small>Administrator</small></div></div>${nav}</aside><section class="pane"><div class="pt"><span class="pti">${ic(tab, 24)}</span><div><h1>${t[0]}</h1><span class="mu">${t[1]}</span></div></div><div class="crumb">Admin / ${t[0]}</div>${body}</section></div>`
+        }
+        function enhance() {
+            if (!window.jQuery || !jQuery.fn.DataTable) return;
+            jQuery("table.dt").each(function () { jQuery(this).DataTable({ pageLength: 10, order: [], columnDefs: [{ orderable: false, searchable: false, targets: "noso" }] }) });
+        }
+        async function render() {
+            after = null;
+            $("#app").className = me && me.role === "Admin" ? "wide" : "";
+            $("#who").textContent = me ? me.full_name + " · " + me.role : "";
+            $("#lo").style.display = me ? "" : "none";
+
+            if (!configured) return void ($("#app").innerHTML = vSetup());
+            if (!me) return void ($("#app").innerHTML = vLogin());
+
+            let h;
+            try {
+                let userRole = me.role || (currentUser?.user_metadata?.role) || "Student";
+                let studentView = typeof vStudentDashboard === "function" ? vStudentDashboard() : (typeof vStudent === "function" ? vStudent() : "");
+
+                h = (userRole === "Admin" ? "" : greet()) + await ({ Student: () => studentView, Admin: vAdmin }[userRole]());
+            } catch (e) {
+                h = `<div class="card"><p>Could not load data: ${esc(e.message)}</p></div>`;
+            }
+
+            $("#app").innerHTML = h;
+            enhance();
+            if (after) after();
+        }
+        (function () {
+            const h = location.hostname;
+            if (!h.endsWith(".github.io")) return;
+            const repo = location.pathname.split("/")[1];
+            const a = el("gh");
+            a.href = "https://github.com/" + h.split(".")[0] + (repo ? "/" + repo : "");
+            a.hidden = false;
+        })();
+        (async () => { if (configured) await loadMe(); render() })();
+    </script>
+
+
+</body>
+
+</html>
