@@ -32,7 +32,7 @@ That is eight components across six categories.
 1. Create a free project at supabase.com.
 2. Go to **SQL Editor, New query**, paste all of `schema.sql` and click **Run**.
 3. Run `admin_only.sql` the same way.
-4. Go to **Authentication, Providers, Email** and turn off "Confirm email" for easier demos.
+4. Go to **Authentication, Providers, Email** and turn on "Confirm email" so new students must verify their email. Set up custom SMTP under **Authentication, Emails, SMTP Settings** so the emails reach every student. For quick demos you can turn confirmation off.
 5. Go to **Project Settings, API** and copy the **Project URL** and **anon public key** into `CFG` at the top of the script in `index.html`. The anon key is meant to be public because security comes from Row Level Security. Never put the `service_role` key in the page.
 6. Open `index.html` or deploy it to GitHub Pages and register a student account.
 7. After deploying, set **Authentication, URL Configuration, Site URL** to your GitHub Pages link.
