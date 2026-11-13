@@ -1151,13 +1151,18 @@
             text-decoration: none;
             font-weight: 600
         }
+        
     </style>
 </head>
 
 <body>
     <header>
+        
         <div class="brand"><i class="lg">S</i>
             <div><b>SEMS</b><small>Student Enrollment and Records</small></div>
+            <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: rgba(59, 130, 246, 0.1); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 500;">
+    🌓 Toggle Theme
+</button>
         </div>
         <div class="sp"></div><span id="who" class="pill"></span><button id="lo" onclick="logout()"
             style="display:none">Log out</button>
@@ -1271,6 +1276,27 @@
                 toast("Check your email to confirm your account, then sign in.");
             }
         }
+        function calculateAge() {
+    const birthdateVal = document.getElementById("reg-birthdate").value;
+    const ageInput = document.getElementById("reg-age");
+    
+    if (!birthdateVal || !ageInput) {
+        if (ageInput) ageInput.value = "";
+        return;
+    }
+
+    const dob = new Date(birthdateVal);
+    const today = new Date();
+    
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+        age--;
+    }
+
+    ageInput.value = age >= 0 ? age : 0;
+}
         const greet = () => `<div class="hd"><h1>Welcome, ${esc(me.full_name.split(" ")[0] || me.role)}</h1><span class="mu">${{ Student: "Enroll in subjects and track your grades.", Admin: "Manage enrollments, payments, grades, subjects and users." }[me.role]}</span></div>`;
         function vSetup() { return `<div class="card" style="max-width:640px;margin:30px auto"><h2>Setup needed</h2><p>Open <b>index.html</b>, find <code>CFG</code> near the top of the script and paste your Supabase <b>Project URL</b> and <b>anon key</b>. See README.md for the full steps.</p></div>` }
         function vLogin() {
@@ -1287,6 +1313,36 @@
                      <option>BS Information Technology</option>
                      <option>BS Computer Science</option>
                  </select>
+
+                <div style="display: flex; gap: 10px; margin-top: 12px;">
+    <div style="flex: 2;">
+        <label style="font-weight: 500; font-size: 13px; display: block;">Birthdate</label>
+        <input id="reg-birthdate" type="date" onchange="calculateAge()" style="width: 100%; margin-top: 4px;">
+    </div>
+    <div style="flex: 1;">
+        <label style="font-weight: 500; font-size: 13px; display: block;">Age</label>
+        <!-- Nilagyan natin ng readonly para hindi na ma-type manually, kusang magkakalagay -->
+        <input id="reg-age" type="number" placeholder="19" readonly style="width: 100%; margin-top: 4px; background: rgba(0,0,0,0.05); cursor: not-allowed;">
+    </div>
+    <div style="flex: 2;">
+        <label>Gender</label>
+        <select id="reg-gender" style="width: 100%; padding: 8px;">
+            <option value="">Select</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+</div>
+
+<label style="margin-top: 12px; display: block;">Contact Number</label>
+<input id="reg-contact" type="text" placeholder="09123456789" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)" style="width: 100%; margin-top: 4px;">
+
+<label style="margin-top: 12px; display: block;">Home Address</label>
+<input id="reg-address" type="text" placeholder="Brgy., Town, Province">
+<!-- ============================================ -->
+
+
                  <div class="row">
                     <div>
                         <label>Password</label>
@@ -1746,7 +1802,19 @@ async function submitEnlistmentToDatabase() {
             $("#lo").style.display = me ? "" : "none";
 
             if (!configured) return void ($("#app").innerHTML = vSetup());
-            if (!me) return void ($("#app").innerHTML = vLogin());
+            if (!me) {
+        
+         if (authMode === "admin-register") {
+            return void (document.getElementById("app").innerHTML = vAdminRegister());
+        } else {
+            return void (document.getElementById("app").innerHTML = (typeof vLogin === "function" ? vLogin() : "") + `
+                <div style="text-align: center; margin-top: 15px; display: flex; justify-content: center; gap: 15px;">
+                    
+                    <small class="mu"><a href="#" onclick="setAuthMode('admin-register')">Register as Admin</a></small>
+                </div>
+            `);
+        }
+    }
 
             let h;
             try {
@@ -1773,7 +1841,186 @@ async function submitEnlistmentToDatabase() {
         (async () => { if (configured) await loadMe(); render() })();
     </script>
 
+<script>
+    // 1. I-load ang naka-save na theme pag-buklod ng pahina
+    (function() {
+        const savedTheme = localStorage.getItem("sems_theme") || "dark";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+    })();
 
+    // 2. Function para mag-toggle ng Light at Dark mode
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("sems_theme", newTheme);
+        
+        const btn = document.getElementById("theme-toggle-btn");
+        if (btn) {
+            btn.textContent = newTheme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
+        }
+    }
+    let authMode = "login"; // 'login', 'student-register', o 'admin-register'
+
+function setAuthMode(mode) {
+    authMode = mode;
+    if (typeof render === "function") render();
+}
+
+function getAuthHeaderSwitcher(activeType) {
+    return `
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 8px;">
+       
+        <button onclick="setAuthMode('admin-register')" style="flex: 1; padding: 8px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; background: ${activeType === 'admin' ? '#3b82f6' : 'transparent'}; color: #fff;">
+            Admin
+        </button>
+    </div>`;
+}
+
+
+
+function vAdminRegister() {
+    return `
+    <div class="card" style="max-width: 450px; margin: 30px auto; border-top: 3px solid #6366f1;">
+        ${getAuthHeaderSwitcher('admin')}
+        <h2 style="margin-bottom: 4px;">Admin Registration</h2>
+        <small class="mu" style="display: block; margin-bottom: 16px;">Create a secure administrative account</small>
+        
+        <label style="font-weight: 500; font-size: 13px;">Full Name</label>
+        <input id="admin-reg-name" type="text" placeholder="Administrator Name" style="width: 100%; margin-top: 4px; margin-bottom: 12px;">
+        
+        <label style="font-weight: 500; font-size: 13px;">Email Address</label>
+        <input id="admin-reg-email" type="email" placeholder="admin@sems.edu" style="width: 100%; margin-top: 4px; margin-bottom: 12px;">
+        
+        <label style="font-weight: 500; font-size: 13px;">Password</label>
+        <input id="admin-reg-password" type="password" placeholder="••••••••" style="width: 100%; margin-top: 4px; margin-bottom: 12px;">
+
+        <label style="font-weight: 500; font-size: 13px;">Admin Secret Passcode</label>
+        <input id="admin-secret-code" type="password" placeholder="Enter security key" style="width: 100%; margin-top: 4px; margin-bottom: 16px;">
+        
+        <button class="p w" onclick="handleAdminRegister()" style="width: 100%; font-weight: 600; padding: 10px;">Register Admin</button>
+        
+        <div style="text-align: center; margin-top: 15px;">
+            <small class="mu">Already have an account? <a href="#" onclick="setAuthMode('login')">Sign in</a></small>
+        </div>
+    </div>`;
+}
+
+async function handleAdminRegister() {
+    const fullName = document.getElementById("admin-reg-name").value.trim();
+    const email = document.getElementById("admin-reg-email").value.trim();
+    const password = document.getElementById("admin-reg-password").value;
+    const secretCode = document.getElementById("admin-secret-code").value.trim();
+
+    const ADMIN_PASSCODE = "SEMS2026Admin"; // Maaari mong palitan ang secret code na ito
+    if (secretCode !== ADMIN_PASSCODE) {
+        return alert("Invalid Admin Security Code!");
+    }
+
+    if (!fullName || !email || !password) {
+        return alert("Please fill in all required fields.");
+    }
+
+    const { data, error } = await sb.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+            data: {
+                full_name: fullName,
+                role: 'Admin'
+            }
+        }
+    });
+
+    if (error) return alert(error.message);
+
+    alert("Admin registration successful! You can now sign in.");
+    setAuthMode("login");
+
+    async function handleAdminRegister() {
+    const fullName = document.getElementById("admin-reg-name").value.trim();
+    const email = document.getElementById("admin-reg-email").value.trim();
+    const password = document.getElementById("admin-reg-password").value;
+    const secretCode = document.getElementById("admin-secret-code").value.trim();
+
+    // 1. Suriin ang Secret Code
+    const ADMIN_PASSCODE = "SEMS2026Admin"; 
+    if (secretCode !== ADMIN_PASSCODE) {
+        return alert("Invalid Admin Security Code!");
+    }
+
+    if (!fullName || !email || !password) {
+        return alert("Please fill in all required fields.");
+    }
+
+    // 2. I-register sa Supabase kung saan explicit na naka-set sa 'Admin'
+    const { data, error } = await sb.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+            data: {
+                full_name: fullName,
+                role: 'Admin' // <--- Dito natin sinasabing Admin siya
+            }
+        }
+    });
+
+    if (error) {
+        return alert(error.message);
+    }
+
+    alert("Admin registration successful! Please log in.");
+    setAuthMode("login");
+}}
+// Halimbawa kung paano kinukuha ang user at ang role nito mula sa Supabase session
+async function checkUserRole() {
+    const { data: { session }, error } = await sb.auth.getSession();
+    
+    if (!session || !session.user) return null;
+
+    // Dito kinukuha ang role mula sa user_metadata na nilagay natin sa signUp
+    const userRole = session.user.user_metadata?.role || 'Student'; // Default sa Student kung walang mahanap
+    
+    console.log("Current User Role:", userRole); // Pwede mong i-check sa Console (F12)
+    return userRole;
+}
+async function redirectToDashboard() {
+    const role = await checkUserRole();
+
+    if (role === 'Admin') {
+        // I-load ang Admin Dashboard
+        loadAdminDashboard();
+    } else {
+        // I-load ang Student Dashboard
+        loadStudentDashboard();
+    }
+}
+async function checkUserAndRedirect() {
+    // Kunin ang kasalukuyang session
+    const { data: { session } } = await sb.auth.getSession();
+    
+    if (!session) {
+        // Walang naka-login, balik sa login view
+        setAuthMode("login");
+        return;
+    }
+
+    // Kunin ang role mula sa user_metadata na pinasa natin nung nag-signUp
+    const userRole = session.user.user_metadata?.role;
+    
+    console.log("Logged in User Role:", userRole); // Pwede mong i-check sa Console (F12)
+
+    if (userRole === 'Admin') {
+        // Dalhin sa Admin Dashboard
+        loadAdminDashboard();
+    } else {
+        // Dalhin sa Student Dashboard
+        loadStudentDashboard();
+    }
+}
+
+</script>
 </body>
 
 </html>
