@@ -1195,6 +1195,68 @@
 }
         
     </style>
+
+    <!-- SEMS Cerulean Blue theme (added) -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* SEMS Cerulean Blue theme (Pantone 15-4020) */
+
+:root{
+  --bg:#CBDAEC; --card:#F6F9FD; --tx:#1B2638; --mu:#3A4A63; --bd:#B9CCE3;
+  --ac:#2F5382; --ac2:#4F78A8; --ok:#1F7A4D; --wn:#9A5B0E; --bad:#B3261E;
+  --sh:0 1px 2px rgba(27,38,56,.06),0 10px 28px rgba(47,83,130,.16);
+  --text-main:var(--tx); --border-color:var(--bd);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1726; --card:#16233A; --tx:#E8EEF7; --mu:#9DB0C9; --bd:#2A3B57;
+    --ac:#6A90C0; --ac2:#4A72A3; --ok:#4ade80; --wn:#fbbf24; --bad:#f87171;
+    --sh:0 1px 2px rgba(0,0,0,.5); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1726; --card:#16233A; --tx:#E8EEF7; --mu:#9DB0C9; --bd:#2A3B57;
+  --ac:#6A90C0; --ac2:#4A72A3; --ok:#4ade80; --wn:#fbbf24; --bad:#f87171;
+  --sh:0 1px 2px rgba(0,0,0,.5); color-scheme:dark;
+}
+
+/* Gradients and shadows that were hard-coded purple */
+.lg{box-shadow:0 4px 12px rgba(47,83,130,.35)}
+button.p{box-shadow:0 4px 12px rgba(47,83,130,.3)}
+.hero{background:linear-gradient(135deg,#1F3A5F 0%,#3F6593 55%,#7FA1CC 100%)}
+.banner{background:linear-gradient(120deg,#1F3A5F 0%,#3F6593 55%,#7FA1CC 100%)}
+.banner button.solid{color:#2F5382}
+.side{background:linear-gradient(180deg,#1B3354,#0F1F36)}
+.side button.on{background:linear-gradient(135deg,#3F6593,#7FA1CC);box-shadow:0 6px 16px rgba(47,83,130,.45)}
+
+/* Serif headings like the Pantone swatch */
+h1,.hd h1,.hero h1,.pt h1,.banner h2{font-family:"Cormorant Garamond",Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:-.01em}
+.hd h1{font-size:36px;line-height:1.1}
+.pt h1{font-size:34px}
+.banner h2{font-size:34px}
+.hero h1{font-size:50px;line-height:1.02}
+.brand b{font-family:"Cormorant Garamond",Georgia,serif;font-size:22px;font-weight:700}
+@media (max-width:760px){.hero h1{font-size:36px}.hd h1{font-size:29px}.pt h1{font-size:28px}.banner h2{font-size:28px}}
+
+/* Inline colors in the student pages that were made for the dark theme (screen only, so printing is unchanged) */
+@media screen{
+  :root:not([data-theme="dark"]) [style*="color: #60a5fa"]{color:var(--ac)!important}
+  :root:not([data-theme="dark"]) [style*="color: #34d399"]{color:var(--ok)!important}
+  :root:not([data-theme="dark"]) [style*="color: #f87171"]{color:var(--bad)!important}
+  [style*="rgba(255,255,255,0.05)"],[style*="rgba(255,255,255,0.1)"]{border-color:var(--bd)!important}
+  #cor-printable-area{background:var(--card)!important;border:1px solid var(--bd)!important}
+}
+</style>
+<script>
+/* Start everyone in the light Cerulean theme once. After that, the Toggle Theme button choice is remembered. */
+try{
+  if(!localStorage.getItem("sems_theme_cerulean")){
+    localStorage.setItem("sems_theme","light");
+    localStorage.setItem("sems_theme_cerulean","1");
+  }
+}catch(e){}
+</script>
 </head>
 
 <body>
