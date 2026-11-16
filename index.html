@@ -1257,6 +1257,7 @@ try{
   }
 }catch(e){}
 </script>
+<style>.bad-input{border-color:var(--bad)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--bad) 22%,transparent)!important}</style>
 </head>
 
 <body>
@@ -1310,6 +1311,7 @@ try{
         const call = async (p, ok) => { const { error } = await p; if (error) toast(error.message, 1); else toast(ok); await render() };
         let me = null, mode = "in", SUBS = [], tab = "dash", after = null, charts = [], SLIP = null;
         const I = {
+            sec: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
             dash: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
             enr: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>',
             gr: '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
@@ -1322,7 +1324,7 @@ try{
             arrow: '<path d="M5 12h14M12 5l7 7"/>'
         };
         const ic = (k, s) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[k]}</svg>`;
-        const TITLES = { dash: ["Dashboard", "Overview of the whole system"], enr: ["Enrollments", "Requests and payments"], gr: ["Grades", "Post grades for enrolled students"], us: ["Users", "Accounts and roles"], su: ["Subjects", "Subject list and prerequisites"], lg: ["Audit log", "Recent system activity"] };
+        const TITLES = { dash: ["Dashboard", "Overview of the whole system"], enr: ["Enrollments", "Requests and payments"], gr: ["Grades", "Post grades for enrolled students"], sec: ["Sections", "Assign students to sections"], us: ["Users", "Accounts and roles"], su: ["Subjects", "Subject list and prerequisites"], lg: ["Audit log", "Recent system activity"] };
         const ago = d => { const m = Math.floor((Date.now() - new Date(d)) / 60000); if (m < 1) return "just now"; if (m < 60) return m + " min ago"; if (m < 1440) return Math.floor(m / 60) + " hr ago"; const n = Math.floor(m / 1440); return n + (n > 1 ? " days ago" : " day ago") };
         const ring = (pct, icon) => `<div class="rw"><svg class="rg" viewBox="0 0 54 54"><circle class="rb" cx="27" cy="27" r="22"/><circle class="rf" cx="27" cy="27" r="22" stroke-dasharray="${(Math.max(0, Math.min(100, pct)) * 1.3823).toFixed(1)} 138.23"/></svg><span class="ci">${ic(icon, 20)}</span></div>`;
         const avatar = n => `<span class="av">${esc((n || "?").trim().charAt(0).toUpperCase())}</span>`;
@@ -1376,8 +1378,16 @@ try{
     };
 }
         function setMode(m) { mode = m; render() }
-        async function login() { const { error } = await sb.auth.signInWithPassword({ email: $("#u").value.trim(), password: $("#p").value }); if (error) return toast(error.message, 1); await loadMe(); render() }
-        async function logout() { await sb.auth.signOut(); me = null; tab = "dash"; render() }
+        function checkContact(inp, force) {
+            const n = inp.value.length, hint = $("#contact-hint");
+            const bad = n !== 11 && (n > 0 || force);
+            inp.classList.toggle("bad-input", bad);
+            if (!hint) return;
+            hint.style.color = bad ? "var(--bad)" : (n === 11 ? "var(--ok)" : "var(--mu)");
+            hint.textContent = bad ? "Contact number needs 11 digits (" + n + "/11)" : (n === 11 ? "\u2713 Valid contact number" : "Must be exactly 11 digits");
+        }
+        async function login() { const { error } = await sb.auth.signInWithPassword({ email: $("#u").value.trim(), password: $("#p").value }); if (error) return toast(error.message, 1); await loadMe(); await sb.rpc("log_session", { p_event: "Time in" }); render() }
+        async function logout() { try { await sb.rpc("log_session", { p_event: "Time out" }) } catch (e) { } await sb.auth.signOut(); me = null; tab = "dash"; render() }
         async function register() {
     const v = i => $("#" + i).value;
     const firstName = v("rfn").trim();
@@ -1395,6 +1405,7 @@ try{
     const program = v("rg");
 
     if (!firstName || !lastName) return toast("Enter your First name and Last name.", 1);
+    if (contact.length !== 11) { checkContact($("#reg-contact"), true); $("#reg-contact").focus(); return toast("Contact number must be exactly 11 digits (e.g. 09123456789).", 1); }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast("Enter a valid email address.", 1);
     if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/\d/.test(pw)) {
         return toast("Weak password: Must be at least 8 characters with letters and numbers.", 1);
@@ -1512,7 +1523,8 @@ try{
 </div>
 
 <label style="margin-top: 12px; display: block;">Contact Number</label>
-<input id="reg-contact" type="text" placeholder="09123456789" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)" style="width: 100%; margin-top: 4px;">
+<input id="reg-contact" type="text" placeholder="09123456789" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11); checkContact(this)" style="width: 100%; margin-top: 4px;">
+<small id="contact-hint" class="mu" style="display:block;margin-top:4px;font-size:11.5px;">Must be exactly 11 digits</small>
 
 <label style="margin-top: 12px; display: block;">Home Address</label>
 <input id="reg-address" type="text" placeholder="Brgy., Town, Province">
@@ -1912,6 +1924,8 @@ async function loadStudentInstructorsView() {
             
             <label style="font-weight: 500; margin-top: 12px;">Enrolled Program</label>
             <input type="text" value="${program}" disabled style="opacity: 0.6;">
+            <label style="font-weight: 500; margin-top: 12px;">Section</label>
+            <input type="text" value="${user.section || 'Unassigned'}" disabled style="opacity: 0.6;">
 
             <div style="display: flex; gap: 10px; margin-top: 12px;">
                 <div style="flex: 2;">
@@ -2013,6 +2027,7 @@ async function loadStudentInstructorsView() {
                 <div><b>Student Name:</b> ${user.full_name || 'N/A'}</div>
                 <div><b>Student ID:</b> ${userId.slice(0, 8).toUpperCase()}</div>
                 <div><b>Program:</b> ${user.program || 'BS Information Technology'}</div>
+                <div><b>Section:</b> ${user.section || 'Unassigned'}</div>
                 <div><b>Official Receipt (OR) No:</b> ${enrollment.or_no || '0001'}</div>
                 <div><b>Status:</b> <span style="color: #34d399; font-weight: 600;">Officially Enrolled</span></div>
                 <div><b>Total Units Enrolled:</b> ${totalUnits} Units</div>
@@ -2187,7 +2202,11 @@ async function loadStudentInstructorsView() {
         const allEnr = () => q(sb.from("enrollments").select("*,profiles(full_name,student_no),enrollment_items(subject_code)").order("id", { ascending: false }));
         const pay = id => call(sb.rpc("record_payment", { eid: id, or_no: $("#or" + id).value.trim() }), "Payment recorded.");
         const decide = (id, ok) => call(sb.rpc("decide_enrollment", { eid: id, approve: ok, note: ok ? "" : $("#n" + id).value }), "Enrollment " + (ok ? "approved" : "rejected") + ".");
-        const postGrade = (sid, code) => call(sb.rpc("post_grade", { sid, code, g: parseFloat($("#g" + sid.slice(0, 8) + code).value) }), "Grade posted to the student portal.");
+        const postGrade = (sid, code) => { const v = parseFloat($("#g" + sid.slice(0, 8) + code).value); if (isNaN(v)) return toast("Choose a grade first.", 1); return call(sb.rpc("post_grade", { sid, code, g: v }), "Grade posted to the student portal.") };
+        const setSection = id => call(sb.rpc("admin_set_section", { p_uid: id, p_section: el("sec" + id).value }), "Section saved.");
+        let grSec = "";
+        const setGrSec = v => { grSec = v; render() };
+        const GRADES = [1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 4, 5];
         const setTab = t => { tab = t; render() };
         const setRole = id => call(sb.rpc("admin_set_role", { p_uid: id, p_role: el("ro" + id).value }), "Role updated.");
         const saveSubject = () => call(sb.rpc("admin_save_subject", { p_code: el("sc").value, p_title: el("st").value, p_units: parseInt(el("su").value), p_prereq: el("sp").value }), "Subject saved.");
@@ -2201,7 +2220,8 @@ async function loadStudentInstructorsView() {
             charts.push(new Chart(el("c2"), { type: "bar", data: { labels: bySub.map(x => x[0]), datasets: [{ label: "Students enrolled", data: bySub.map(x => x[1]), backgroundColor: cv("--ac"), borderRadius: 6 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: tx }, grid: { color: bd } }, y: { beginAtZero: true, ticks: { color: tx, precision: 0 }, grid: { color: bd } } } } }));
         }
         async function aDa() {
-            const [e, st, lg] = await Promise.all([allEnr(), q(sb.from("profiles").select("*").eq("role", "Student").order("created_at", { ascending: false })), q(sb.from("audit_log").select("*,profiles(full_name)").order("id", { ascending: false }).limit(6))]);
+            const [e, st, lg0] = await Promise.all([allEnr(), q(sb.from("profiles").select("*").eq("role", "Student").order("created_at", { ascending: false })), q(sb.from("audit_log").select("*,profiles(full_name)").order("id", { ascending: false }).limit(25))]);
+            const lg = lg0.filter(l => !/^Time (in|out)$/.test(l.action)).slice(0, 6);
             const stat = { Pending: 0, Approved: 0, Rejected: 0 }, counts = {}, enrolled = new Set();
             let collected = 0, paidCount = 0;
             for (const x of e) {
@@ -2234,9 +2254,19 @@ async function loadStudentInstructorsView() {
             return `<div class="card"><h2>Enrollment requests</h2><p class="mu">Record the student's payment first, then approve. Approval is blocked until payment is recorded.</p>${table(["Student", "Subjects", "Fee", ["Payment"], ["Decision"]], rows, "No enrollment requests yet.", true)}</div>`
         }
         async function aGr() {
-            const [items, gr] = await Promise.all([q(sb.from("enrollment_items").select("subject_code,enrollments!inner(student_id,status,profiles(full_name,student_no))").eq("enrollments.status", "Approved").order("subject_code")), q(sb.from("grades").select("*"))]);
-            const rows = items.map(x => { const sid = x.enrollments.student_id, g = gr.find(y => y.student_id === sid && y.subject_code === x.subject_code); return `<tr><td>${x.subject_code}</td><td>${esc(x.enrollments.profiles.full_name)}<div class="mu">${esc(x.enrollments.profiles.student_no)}</div></td><td style="width:120px"><input id="g${sid.slice(0, 8)}${x.subject_code}" type="number" step="0.25" min="1" max="5" value="${g ? g.grade : ""}"></td><td><button class="p" onclick="postGrade('${sid}','${x.subject_code}')">Post</button></td></tr>` });
-            return `<div class="card"><h2>Post grades</h2><p class="mu">Only officially enrolled (approved) students appear here. Grades go straight to the student portal.</p>${table(["Subject", "Student", ["Grade"], [""]], rows, "No approved enrollments yet.", true)}</div>`
+            const [items, gr] = await Promise.all([q(sb.from("enrollment_items").select("subject_code,enrollments!inner(student_id,status,profiles(full_name,student_no,section))").eq("enrollments.status", "Approved")), q(sb.from("grades").select("*"))]);
+            const sec = x => x.enrollments.profiles.section || "";
+            const secs = [...new Set(items.map(sec).filter(Boolean))].sort();
+            const list = items.filter(x => !grSec || (grSec === "_none" ? !sec(x) : sec(x) === grSec)).sort((x, y) => (sec(x) || "\uffff").localeCompare(sec(y) || "\uffff") || x.subject_code.localeCompare(y.subject_code) || x.enrollments.profiles.full_name.localeCompare(y.enrollments.profiles.full_name));
+            const rows = list.map(x => { const sid = x.enrollments.student_id, g = gr.find(y => y.student_id === sid && y.subject_code === x.subject_code); return `<tr><td>${esc(sec(x)) || '<span class="mu">No section</span>'}</td><td>${x.subject_code}</td><td>${esc(x.enrollments.profiles.full_name)}<div class="mu">${esc(x.enrollments.profiles.student_no)}</div></td><td style="width:130px"><select id="g${sid.slice(0, 8)}${x.subject_code}"><option value="">Select</option>${GRADES.map(v => `<option value="${v}" ${g && Number(g.grade) === v ? "selected" : ""}>${v.toFixed(2)}</option>`).join("")}</select></td><td><button class="p" onclick="postGrade('${sid}','${x.subject_code}')">Post</button></td></tr>` });
+            const flt = `<div class="inl" style="margin-bottom:12px;max-width:280px"><select onchange="setGrSec(this.value)"><option value="">All sections</option>${secs.map(c => `<option ${grSec === c ? "selected" : ""}>${esc(c)}</option>`).join("")}<option value="_none" ${grSec === "_none" ? "selected" : ""}>No section</option></select></div>`;
+            return `<div class="card"><h2>Post grades</h2><p class="mu">Students are sorted by section. Only officially enrolled (approved) students appear here. Grades go straight to the student portal.</p>${flt}${table(["Section", "Subject", "Student", ["Grade"], [""]], rows, "No approved enrollments for this selection.", true)}</div>`
+        }
+        async function aSec() {
+            const st = await q(sb.from("profiles").select("*").eq("role", "Student").order("full_name"));
+            const secs = [...new Set(st.map(u => u.section).filter(Boolean))].sort();
+            const rows = st.map(u => `<tr><td>${esc(u.full_name)}<div class="mu">${esc(u.student_no || "")}</div></td><td>${esc(u.program)}</td><td data-order="${esc(u.section || "~")}">${u.section ? esc(u.section) : '<span class="mu">Unassigned</span>'}</td><td><div class="inl"><input id="sec${u.id}" list="seclist" value="${esc(u.section || "")}" placeholder="e.g. BSIT-2C" maxlength="20"><button class="p" onclick="setSection('${u.id}')">Save</button></div></td></tr>`);
+            return `<div class="card"><h2>Assign sections</h2><p class="mu">Give each student a section. The Grades page is sorted and filtered by these sections.</p><datalist id="seclist">${secs.map(c => `<option value="${esc(c)}">`).join("")}</datalist>${table(["Student", "Program", "Section", ["Assign section"]], rows, "No students have registered yet.", true)}</div>`
         }
         async function aUs() {
             const us = await q(sb.from("profiles").select("*").order("created_at"));
@@ -2249,15 +2279,20 @@ async function loadStudentInstructorsView() {
             return `<div class="card"><h2>Subjects</h2>${table(["Subject", "Units", "Prerequisite", [""]], rows, "No subjects yet.", true)}</div>
 <div class="card"><h2>Add or edit a subject</h2><div class="row"><div><label>Code</label><input id="sc" placeholder="ITEC206"></div><div><label>Title</label><input id="st"></div><div><label>Units</label><input id="su" type="number" min="1" max="6" value="3"></div><div><label>Prerequisite</label><select id="sp"><option value="">None</option>${subs.map(x => `<option>${x.code}</option>`).join("")}</select></div></div><p><button class="p" onclick="saveSubject()">Save subject</button> <span class="mu">An existing code updates that subject.</span></p></div>`
         }
+        let lgF = "";
+        const setLgF = v => { lgF = v; render() };
+        const evTag = a => a === "Time in" ? '<span class="tag Paid">Time in</span>' : a === "Time out" ? '<span class="tag Failed">Time out</span>' : esc(a);
         async function aLg() {
-            const lg = await q(sb.from("audit_log").select("*,profiles(full_name)").order("id", { ascending: false }).limit(100));
-            const rows = lg.map(l => `<tr><td>${esc(new Date(l.created_at).toLocaleString())}</td><td>${esc(l.profiles?.full_name || "")}</td><td>${esc(l.action)}</td></tr>`);
-            return `<div class="card"><h2>Audit log</h2>${table(["When", "Who", "Action"], rows, "No activity yet.", true)}</div>`
+            const all = await q(sb.from("audit_log").select("*,profiles(full_name,role)").order("id", { ascending: false }).limit(300));
+            const lg = lgF === "s" ? all.filter(l => /^Time (in|out)$/.test(l.action)) : all;
+            const rows = lg.map(l => `<tr><td data-order="${esc(l.created_at)}">${esc(new Date(l.created_at).toLocaleString())}</td><td>${esc(l.profiles?.full_name || "")}</td><td>${esc(l.profiles?.role || "")}</td><td>${evTag(l.action)}</td></tr>`);
+            const flt = `<div class="inl" style="margin-bottom:12px;max-width:280px"><select onchange="setLgF(this.value)"><option value="">All activity</option><option value="s" ${lgF === "s" ? "selected" : ""}>Time in / Time out only</option></select></div>`;
+            return `<div class="card"><h2>Audit log</h2><p class="mu">Every login is recorded as Time in and every logout as Time out, for students and admins.</p>${flt}${table(["When", "Who", "Role", "Action"], rows, "No activity yet.", true)}</div>`
         }
         async function vAdmin() {
-            const groups = [["Main", [["dash", "Dashboard"]]], ["Manage", [["enr", "Enrollments"], ["gr", "Grades"]]], ["Setup", [["us", "Users"], ["su", "Subjects"], ["lg", "Audit log"]]]];
+            const groups = [["Main", [["dash", "Dashboard"]]], ["Manage", [["enr", "Enrollments"], ["sec", "Sections"], ["gr", "Grades"]]], ["Setup", [["us", "Users"], ["su", "Subjects"], ["lg", "Audit log"]]]];
             const t = TITLES[tab];
-            const [body, pend] = await Promise.all([{ dash: aDa, enr: aEnr, gr: aGr, us: aUs, su: aSu, lg: aLg }[tab](), q(sb.from("enrollments").select("id").eq("status", "Pending"))]);
+            const [body, pend] = await Promise.all([{ dash: aDa, enr: aEnr, gr: aGr, sec: aSec, us: aUs, su: aSu, lg: aLg }[tab](), q(sb.from("enrollments").select("id").eq("status", "Pending"))]);
             const nav = groups.map(([g, items]) => `<div class="sl">${g}</div>` + items.map(([k, l]) => `<button class="${tab === k ? "on" : ""}" onclick="setTab('${k}')">${ic(k, 18)}<span>${l}</span>${k === "enr" && pend.length ? `<em class="bdg">${pend.length}</em>` : ""}</button>`).join("")).join("");
             return `<div class="shell"><aside class="side"><div class="sidehd"><i class="lg">${esc((me.full_name || "A").charAt(0).toUpperCase())}</i><div><b>${esc(me.full_name)}</b><small>Administrator</small></div></div>${nav}</aside><section class="pane"><div class="pt"><span class="pti">${ic(tab, 24)}</span><div><h1>${t[0]}</h1><span class="mu">${t[1]}</span></div></div><div class="crumb">Admin / ${t[0]}</div>${body}</section></div>`
         }
