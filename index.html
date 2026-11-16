@@ -1301,6 +1301,8 @@ try{
         const CFG = { url: "https://edgbbujkmodutaarblne.supabase.co", key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkZ2JidWprbW9kdXRhYXJibG5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwNDYyMTYsImV4cCI6MjEwOTYyMjIxNn0.01Hn5MZq591SFmgAdUOP0rWSKkrH8ndurVwx-75CnZo" };
         const configured = !CFG.url.includes("YOUR_");
         const sb = configured ? supabase.createClient(CFG.url, CFG.key) : null;
+        let recovery = /type=recovery/.test(location.hash + location.search);
+        if (sb) sb.auth.onAuthStateChange(ev => { if (ev === "PASSWORD_RECOVERY") { recovery = true; setTimeout(render, 0) } });
         const $ = s => document.querySelector(s);
         const el = id => document.getElementById(id);
         const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -1311,6 +1313,7 @@ try{
         const call = async (p, ok) => { const { error } = await p; if (error) toast(error.message, 1); else toast(ok); await render() };
         let me = null, mode = "in", SUBS = [], tab = "dash", after = null, charts = [], SLIP = null;
         const I = {
+            prof: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>',
             sec: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
             dash: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
             enr: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>',
@@ -1324,7 +1327,7 @@ try{
             arrow: '<path d="M5 12h14M12 5l7 7"/>'
         };
         const ic = (k, s) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[k]}</svg>`;
-        const TITLES = { dash: ["Dashboard", "Overview of the whole system"], enr: ["Enrollments", "Requests and payments"], gr: ["Grades", "Post grades for enrolled students"], sec: ["Sections", "Assign students to sections"], us: ["Users", "Accounts and roles"], su: ["Subjects", "Subject list and prerequisites"], lg: ["Audit log", "Recent system activity"] };
+        const TITLES = { dash: ["Dashboard", "Overview of the whole system"], enr: ["Enrollments", "Requests and payments"], gr: ["Grades", "Post grades for enrolled students"], sec: ["Sections", "Assign students to sections"], prof: ["Professors", "Assign professors per subject for each section"], us: ["Users", "Accounts and roles"], su: ["Subjects", "Subject list and prerequisites"], lg: ["Audit log", "Recent system activity"] };
         const ago = d => { const m = Math.floor((Date.now() - new Date(d)) / 60000); if (m < 1) return "just now"; if (m < 60) return m + " min ago"; if (m < 1440) return Math.floor(m / 60) + " hr ago"; const n = Math.floor(m / 1440); return n + (n > 1 ? " days ago" : " day ago") };
         const ring = (pct, icon) => `<div class="rw"><svg class="rg" viewBox="0 0 54 54"><circle class="rb" cx="27" cy="27" r="22"/><circle class="rf" cx="27" cy="27" r="22" stroke-dasharray="${(Math.max(0, Math.min(100, pct)) * 1.3823).toFixed(1)} 138.23"/></svg><span class="ci">${ic(icon, 20)}</span></div>`;
         const avatar = n => `<span class="av">${esc((n || "?").trim().charAt(0).toUpperCase())}</span>`;
@@ -1378,6 +1381,27 @@ try{
     };
 }
         function setMode(m) { mode = m; render() }
+        async function sendReset() {
+            const email = $("#fp-email").value.trim();
+            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast("Enter a valid email address.", 1);
+            const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+            if (error) return toast(error.message, 1);
+            toast("If that email is registered, a reset link has been sent. Check your inbox and spam folder.");
+            mode = "in"; render();
+        }
+        function vReset() {
+            return `<div style="max-width:460px;margin:30px auto"><section class="card form"><h2>Choose a new password</h2><p class="mu">You opened a password reset link. Enter your new password below.</p><label>New password</label><input id="np" type="password" autocomplete="new-password"><label>Confirm new password</label><input id="np2" type="password" autocomplete="new-password"><p class="mu">8+ characters with letters and digits.</p><button class="p w" onclick="doReset()">Update password</button></section></div>`;
+        }
+        async function doReset() {
+            const pw = $("#np").value;
+            if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/\d/.test(pw)) return toast("Weak password: needs 8+ characters with letters and numbers.", 1);
+            if (pw !== $("#np2").value) return toast("Passwords do not match.", 1);
+            const { error } = await sb.auth.updateUser({ password: pw });
+            if (error) return toast(error.message, 1);
+            recovery = false; await sb.auth.signOut(); me = null; mode = "in";
+            history.replaceState(null, "", location.pathname);
+            render(); toast("Password updated. Please sign in with your new password.");
+        }
         function checkContact(inp, force) {
             const n = inp.value.length, hint = $("#contact-hint");
             const bad = n !== 11 && (n > 0 || force);
@@ -1488,7 +1512,7 @@ try{
         function vSetup() { return `<div class="card" style="max-width:640px;margin:30px auto"><h2>Setup needed</h2><p>Open <b>index.html</b>, find <code>CFG</code> near the top of the script and paste your Supabase <b>Project URL</b> and <b>anon key</b>. See README.md for the full steps.</p></div>` }
         function vLogin() {
             const reg = mode === "up"; return `<div class="auth"><section class="hero"><i class="lg">S</i><h1>Enroll online.<br>Skip the line.</h1><p>One secure portal for students and school administrators.</p><div class="chips"><span>Prerequisite checks</span><span>Payment verification</span><span>Admin approval</span><span>Instant grades</span></div></section>
-<section class="card form"><div class="tabs"><button class="${reg ? "" : "on"}" onclick="setMode('in')">Sign in</button><button class="${reg ? "on" : ""}" onclick="setMode('up')">Register</button></div>` + (reg ?
+<section class="card form"><div class="tabs"><button class="${reg ? "" : "on"}" onclick="setMode('in')">Sign in</button><button class="${reg ? "on" : ""}" onclick="setMode('up')">Register</button></div>` + (mode === "fp" ? `<h2 style="margin-top:8px">Reset your password</h2><p class="mu">Enter the email you registered with. We will send you a link to choose a new password.</p><label>Email</label><input id="fp-email" type="email" autocomplete="email" onkeydown="event.key==='Enter'&&sendReset()"><button class="p w" style="margin-top:12px" onclick="sendReset()">Send reset link</button><p style="text-align:center;margin-top:10px"><a href="#" onclick="event.preventDefault();setMode('in')">Back to sign in</a></p>` : reg ?
                     `<div class="row">
                     <div><label>First name</label><input id="rfn" autocomplete="given-name"></div>
                     <div><label>Last name</label><input id="rln" autocomplete="family-name"></div>
@@ -1543,7 +1567,7 @@ try{
                     </div>
                  </div>
                  <button class="p w" style="margin-top:12px;" onclick="register()">Create student account</button>` :
-                    `<label>Email</label><input id="u" type="email" autocomplete="username"><label>Password</label><input id="p" type="password" autocomplete="current-password" onkeydown="event.key==='Enter'&&login()"><p><button class="p w" onclick="login()">Sign in</button></p>`) + `</section></div>`
+                    `<label>Email</label><input id="u" type="email" autocomplete="username"><label>Password</label><input id="p" type="password" autocomplete="current-password" onkeydown="event.key==='Enter'&&login()"><p><button class="p w" onclick="login()">Sign in</button></p><p style="text-align:center;margin:6px 0 0"><a href="#" onclick="event.preventDefault();setMode('fp')">Forgot password?</a></p>`) + `</section></div>`
         }
 
 
@@ -2116,6 +2140,7 @@ async function loadStudentInstructorsView() {
                 <tbody>
     `;
 
+    const profMap = await sectionProfs(user.section);
     itemsData.forEach(item => {
         html += `
             <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
@@ -2123,7 +2148,7 @@ async function loadStudentInstructorsView() {
                 <td style="padding: 14px 16px;">3</td> <!-- Pwede mong baguhin kung may units column ka -->
                 <td style="padding: 14px 16px;">TBA</td>
                 <td style="padding: 14px 16px;">TBA</td>
-                <td style="padding: 14px 16px;">TBA</td>
+                <td style="padding: 14px 16px;">${profMap[item.subject_code] ? esc(profMap[item.subject_code].full_name) : "TBA"}</td>
             </tr>
         `;
     });
@@ -2203,6 +2228,12 @@ async function loadStudentInstructorsView() {
         const pay = id => call(sb.rpc("record_payment", { eid: id, or_no: $("#or" + id).value.trim() }), "Payment recorded.");
         const decide = (id, ok) => call(sb.rpc("decide_enrollment", { eid: id, approve: ok, note: ok ? "" : $("#n" + id).value }), "Enrollment " + (ok ? "approved" : "rejected") + ".");
         const postGrade = (sid, code) => { const v = parseFloat($("#g" + sid.slice(0, 8) + code).value); if (isNaN(v)) return toast("Choose a grade first.", 1); return call(sb.rpc("post_grade", { sid, code, g: v }), "Grade posted to the student portal.") };
+        let asSec = "", PROFS = [];
+        const setAsSec = v => { asSec = v; render() };
+        const assignProf = c => call(sb.rpc("admin_assign_professor", { p_section: asSec, p_code: c, p_prof: el("as" + c).value ? parseInt(el("as" + c).value) : null }), "Professor assignment saved.");
+        const saveProf = () => call(sb.rpc("admin_save_professor", { p_id: el("pid").value ? parseInt(el("pid").value) : null, p_name: el("pn").value, p_email: el("pe").value, p_dept: el("pd").value }), "Professor saved.");
+        const fillProf = id => { const x = PROFS.find(y => y.id === id); el("pid").value = x.id; el("pn").value = x.full_name; el("pe").value = x.email || ""; el("pd").value = x.department || ""; el("pn").scrollIntoView({ behavior: "smooth", block: "center" }) };
+        const delProf = id => { if (confirm("Delete this professor? Their section assignments will become unassigned.")) call(sb.rpc("admin_delete_professor", { p_id: id }), "Professor deleted.") };
         const setSection = id => call(sb.rpc("admin_set_section", { p_uid: id, p_section: el("sec" + id).value }), "Section saved.");
         let grSec = "";
         const setGrSec = v => { grSec = v; render() };
@@ -2268,6 +2299,20 @@ async function loadStudentInstructorsView() {
             const rows = st.map(u => `<tr><td>${esc(u.full_name)}<div class="mu">${esc(u.student_no || "")}</div></td><td>${esc(u.program)}</td><td data-order="${esc(u.section || "~")}">${u.section ? esc(u.section) : '<span class="mu">Unassigned</span>'}</td><td><div class="inl"><input id="sec${u.id}" list="seclist" value="${esc(u.section || "")}" placeholder="e.g. BSIT-2C" maxlength="20"><button class="p" onclick="setSection('${u.id}')">Save</button></div></td></tr>`);
             return `<div class="card"><h2>Assign sections</h2><p class="mu">Give each student a section. The Grades page is sorted and filtered by these sections.</p><datalist id="seclist">${secs.map(c => `<option value="${esc(c)}">`).join("")}</datalist>${table(["Student", "Program", "Section", ["Assign section"]], rows, "No students have registered yet.", true)}</div>`
         }
+        async function aPr() {
+            const [pf, subs, ss, st] = await Promise.all([q(sb.from("professors").select("*").order("full_name")), q(sb.from("subjects").select("*").order("code")), q(sb.from("section_subjects").select("*")), q(sb.from("profiles").select("section").eq("role", "Student"))]);
+            PROFS = pf;
+            const secs = [...new Set(st.map(u => u.section).filter(Boolean))].sort();
+            if (!asSec || !secs.includes(asSec)) asSec = secs[0] || "";
+            const cur = c => (ss.find(x => x.section === asSec && x.subject_code === c) || {}).professor_id;
+            const arows = subs.map(x => `<tr><td>${x.code} \u2013 ${esc(x.title)}</td><td><select id="as${x.code}"><option value="">\u2014 unassigned \u2014</option>${pf.map(p => `<option value="${p.id}" ${cur(x.code) === p.id ? "selected" : ""}>${esc(p.full_name)}</option>`).join("")}</select></td><td><button class="p" onclick="assignProf('${x.code}')">Save</button></td></tr>`);
+            const picker = `<div class="inl" style="margin-bottom:12px;max-width:320px"><select onchange="setAsSec(this.value)">${secs.map(c => `<option ${asSec === c ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></div>`;
+            const assign = !secs.length ? `<p class="mu">No sections yet. Assign sections to students first in the Sections tab.</p>` : !pf.length ? `<p class="mu">Add at least one professor below, then assign them here.</p>` : `${picker}${table(["Subject", "Professor", [""]], arows, "No subjects yet.", false)}`;
+            const prows = pf.map(p => `<tr><td>${esc(p.full_name)}</td><td>${esc(p.department || "")}</td><td>${esc(p.email || "")}</td><td><div class="inl"><button onclick="fillProf(${p.id})">Edit</button><button class="d" onclick="delProf(${p.id})">Delete</button></div></td></tr>`);
+            return `<div class="card"><h2>Professors per subject for each section</h2><p class="mu">Choose a section, then pick the professor teaching each subject. Students in that section see their professors in the portal.</p>${assign}</div>
+<div class="card"><h2>Professors</h2>${table(["Name", "Department", "Email", [""]], prows, "No professors yet. Add one below.", false)}</div>
+<div class="card"><h2>Add or edit a professor</h2><input id="pid" type="hidden"><div class="row"><div><label>Full name</label><input id="pn" placeholder="Prof. Ana Cruz"></div><div><label>Department</label><input id="pd" placeholder="Information Technology"></div><div><label>Email (optional)</label><input id="pe" type="email" placeholder="ana.cruz@school.edu"></div></div><p><button class="p" onclick="saveProf()">Save professor</button> <span class="mu">Use Edit on a row to change an existing professor.</span></p></div>`
+        }
         async function aUs() {
             const us = await q(sb.from("profiles").select("*").order("created_at"));
             const rows = us.map(u => `<tr><td>${esc(u.full_name)}<div class="mu">${esc(u.student_no || "")}</div></td><td>${esc(u.email)}</td><td><select id="ro${u.id}" ${u.id === me.id ? "disabled" : ""}>${["Student", "Admin"].map(r => `<option ${r === u.role ? "selected" : ""}>${r}</option>`).join("")}</select></td><td>${u.id === me.id ? `<span class="mu">You</span>` : `<button class="p" onclick="setRole('${u.id}')">Save</button>`}</td></tr>`);
@@ -2290,9 +2335,9 @@ async function loadStudentInstructorsView() {
             return `<div class="card"><h2>Audit log</h2><p class="mu">Every login is recorded as Time in and every logout as Time out, for students and admins.</p>${flt}${table(["When", "Who", "Role", "Action"], rows, "No activity yet.", true)}</div>`
         }
         async function vAdmin() {
-            const groups = [["Main", [["dash", "Dashboard"]]], ["Manage", [["enr", "Enrollments"], ["sec", "Sections"], ["gr", "Grades"]]], ["Setup", [["us", "Users"], ["su", "Subjects"], ["lg", "Audit log"]]]];
+            const groups = [["Main", [["dash", "Dashboard"]]], ["Manage", [["enr", "Enrollments"], ["sec", "Sections"], ["prof", "Professors"], ["gr", "Grades"]]], ["Setup", [["us", "Users"], ["su", "Subjects"], ["lg", "Audit log"]]]];
             const t = TITLES[tab];
-            const [body, pend] = await Promise.all([{ dash: aDa, enr: aEnr, gr: aGr, sec: aSec, us: aUs, su: aSu, lg: aLg }[tab](), q(sb.from("enrollments").select("id").eq("status", "Pending"))]);
+            const [body, pend] = await Promise.all([{ dash: aDa, enr: aEnr, gr: aGr, sec: aSec, prof: aPr, us: aUs, su: aSu, lg: aLg }[tab](), q(sb.from("enrollments").select("id").eq("status", "Pending"))]);
             const nav = groups.map(([g, items]) => `<div class="sl">${g}</div>` + items.map(([k, l]) => `<button class="${tab === k ? "on" : ""}" onclick="setTab('${k}')">${ic(k, 18)}<span>${l}</span>${k === "enr" && pend.length ? `<em class="bdg">${pend.length}</em>` : ""}</button>`).join("")).join("");
             return `<div class="shell"><aside class="side"><div class="sidehd"><i class="lg">${esc((me.full_name || "A").charAt(0).toUpperCase())}</i><div><b>${esc(me.full_name)}</b><small>Administrator</small></div></div>${nav}</aside><section class="pane"><div class="pt"><span class="pti">${ic(tab, 24)}</span><div><h1>${t[0]}</h1><span class="mu">${t[1]}</span></div></div><div class="crumb">Admin / ${t[0]}</div>${body}</section></div>`
         }
@@ -2307,6 +2352,7 @@ async function loadStudentInstructorsView() {
             $("#lo").style.display = me ? "" : "none";
 
             if (!configured) return void ($("#app").innerHTML = vSetup());
+            if (recovery) return void ($("#app").innerHTML = vReset());
             if (!me) {
         
          if (authMode === "admin-register") {
@@ -2444,38 +2490,32 @@ async function loadStudentInstructorsView() {
         setAuthMode("login");
     }
 
-   async function loadInstructorsDataIntoView() {
+   async function sectionProfs(sec) {
+    const map = {};
+    if (!sec) return map;
+    try {
+        const d = await q(sb.from("section_subjects").select("subject_code,professors(full_name,email,department)").eq("section", sec));
+        d.forEach(x => { if (x.professors) map[x.subject_code] = x.professors });
+    } catch (e) { }
+    return map;
+}
+
+async function loadInstructorsDataIntoView() {
     const container = document.getElementById("instructors-container");
     if (!container) return;
-
-    // Kunin ang mga subjects para pantay ang dami ng instructors sa dami ng subjects
-    const subjectsList = (typeof availableSubjects !== "undefined" && availableSubjects.length > 0) 
-        ? availableSubjects 
-        : [1, 2, 3, 4, 5, 6, 7]; // Fallback kung sakaling wala pang subjects array
-
-    let rowsHtml = `<div style="display: grid; gap: 12px;">`;
-    
-    subjectsList.forEach((subj, index) => {
-        const num = index + 1;
-        const subCode = subj.code ? ` (${subj.code})` : '';
-        rowsHtml += `
-        <div style="background: rgba(0,0,0,0.03); padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h4 style="margin: 0; font-size: 15px;">Instructor ${num}</h4>
-                <small class="mu">Assigned Subject${subCode} • instructor${num}@sems.edu</small>
-            </div>
-            <span style="background: #3b82f6; color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;">Faculty</span>
-        </div>`;
-    });
-    
-    rowsHtml += `</div>`;
-
-    container.innerHTML = `
-    <section class="card" style="border-top: 3px solid #3b82f6;">
-        <h3 style="margin-bottom: 16px;">📚 Faculty & Instructors</h3>
-        <small class="mu" style="display: block; margin-bottom: 20px;">List of faculty members corresponding to your curriculum subjects.</small>
-        ${rowsHtml}
-    </section>`;
+    const sec = (me || {}).section;
+    if (!sec) {
+        container.innerHTML = `<section class="card" style="text-align:center;padding:40px"><h3>No section yet</h3><p class="mu">Your professors appear here once the admin assigns you to a section.</p></section>`;
+        return;
+    }
+    const [map, subs] = await Promise.all([sectionProfs(sec), q(sb.from("subjects").select("code,title").order("code"))]);
+    const rows = subs.filter(x => map[x.code]).map(x => `<div style="background: rgba(0,0,0,0.03); padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+            <div><h4 style="margin: 0; font-size: 15px;">${esc(map[x.code].full_name)}</h4>
+            <small class="mu">${esc(map[x.code].department || "Faculty")}${map[x.code].email ? " \u2022 " + esc(map[x.code].email) : ""}</small></div>
+            <span class="tag Approved">${esc(x.code)} \u2013 ${esc(x.title)}</span></div>`).join("");
+    container.innerHTML = `<section class="card"><h3 style="margin-bottom: 4px;">Faculty & Instructors</h3>
+        <small class="mu" style="display:block;margin-bottom:16px;">Professors teaching Section ${esc(sec)}.</small>
+        ${rows ? `<div style="display:grid;gap:12px;">${rows}</div>` : `<p class="mu">No professors have been assigned to your section yet.</p>`}</section>`;
 }
 </script>
 
