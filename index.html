@@ -2305,6 +2305,2533 @@ async function loadStudentInstructorsView() {
             const secs = [...new Set(st.map(u => u.section).filter(Boolean))].sort();
             if (!asSec || !secs.includes(asSec)) asSec = secs[0] || "";
             const cur = c => (ss.find(x => x.section === asSec && x.subject_code === c) || {}).professor_id;
+            const none = !pf.length;
+            const cnt = {}; st.forEach(u => { if (u.section) cnt[u.section] = (cnt[u.section] || 0) + 1 });
+            const arows = subs.map(x => `<tr><td>${x.code} – ${esc(x.title)}</td><td><select id="as${x.code}" ${none ? "disabled" : ""}><option value="">— unassigned —</option>${pf.map(p => `<option value="${p.id}" ${cur(x.code) === p.id ? "selected" : ""}>${esc(p.full_name)}</option>`).join("")}</select></td><td><button class="p" onclick="assignProf('${x.code}')" ${none ? "disabled" : ""}>Save</button></td></tr>`);
+            const picker = `<label>Section</label><div class="inl" style="margin-bottom:14px;max-width:340px"><select onchange="setAsSec(this.value)">${secs.map(c => `<option value="${esc(c)}" ${asSec === c ? "selected" : ""}>${esc(c)} (${cnt[c]} student${cnt[c] > 1 ? "s" : ""})</option>`).join("")}</select></div>`;
+            const hint = none ? `<p class="mu" style="margin:0 0 12px"><b>No professors added yet.</b> Add at least one in the form at the bottom of this page, then come back and pick a professor for each subject. <button onclick="el('pn').scrollIntoView({behavior:'smooth',block:'center'});el('pn').focus()">Add a professor</button></p>` : "";
+            const assign = !secs.length ? `<p class="mu">No sections yet. Assign sections to students first in the Sections tab.</p>` : `${picker}${hint}<p class="mu" style="margin:0 0 8px">Professors for section <b>${esc(asSec)}</b></p>${table(["Subject", "Professor", [""]], arows, "No subjects yet.", false)}`;
+            const prows = pf.map(p => `<tr><td>${esc(p.full_name)}</td><td>${esc(p.department || "")}</td><td>${esc(p.email || "")}</td><td><div class="inl"><button onclick="fillProf(${p.id})">Edit</button><button class="d" onclick="delProf(${p.id})">Delete</button></div></td></tr>`);
+            return `<div class="card"><h2>Professors per subject for each section</h2><p class="mu">Choose a section, then pick the professor teaching each subject. Students in that section see their professors in the portal.</p>${assign}</div>
+<div class="card"><h2>Professors</h2>${table(["Name", "Department", "Email", [""]], prows, "No professors yet. Add one below.", false)}</div>
+<div class="card"><h2>Add or edit a professor</h2><input id="pid" type="hidden"><div class="row"><div><label>Full name</label><input id="pn" placeholder="Prof. Ana Cruz"></div><div><label>Department</label><input id="pd" placeholder="Information Technology"></div><div><label>Email (optional)</label><input id="pe" type="email" placeholder="ana.cruz@school.edu"></div></div><p><button class="p" onclick="saveProf()">Save professor</button> <span class="mu">Use Edit on a row to change an existing professor.</span></p></div>`
+        }
+        async function aUs() {
+            const us = await q(sb.from("profiles").select("*").order("created_at"));
+            const rows = us.map(u => `<tr><td>${esc(u.full_name)}<div class="mu">${esc(u.student_no || "")}</div></td><td>${esc(u.email)}</td><td><select id="ro${u.id}" ${u.id === me.id ? "disabled" : ""}>${["Student", "Admin"].map(r => `<option ${r === u.role ? "selected" : ""}>${r}</option>`).join("")}</select></td><td>${u.id === me.id ? `<span class="mu">You</span>` : `<button class="p" onclick="setRole('${u.id}')">Save</button>`}</td></tr>`);
+            return `<div class="card"><h2>User accounts</h2><p class="mu">New users register as Students. Make someone an Admin here.</p>${table(["Name", "Email", ["Role"], [""]], rows, "No users yet.", true)}</div>`
+        }
+        async function aSu() {
+            const subs = await q(sb.from("subjects").select("*").order("code")); SUBS = subs;
+            const rows = subs.map(x => `<tr><td>${x.code} – ${esc(x.title)}</td><td>${x.units}</td><td>${x.prereq || "–"}</td><td><button onclick="fillSub('${x.code}')">Edit</button></td></tr>`);
+            return `<div class="card"><h2>Subjects</h2>${table(["Subject", "Units", "Prerequisite", [""]], rows, "No subjects yet.", true)}</div>
+<div class="card"><h2>Add or edit a subject</h2><div class="row"><div><label>Code</label><input id="sc" placeholder="ITEC206"></div><div><label>Title</label><input id="st"></div><div><label>Units</label><input id="su" type="number" min="1" max="6" value="3"></div><div><label>Prerequisite</label><select id="sp"><option value="">None</option>${subs.map(x => `<option>${x.code}</option>`).join("")}</select></div></div><p><button class="p" onclick="saveSubject()">Save subject</button> <span class="mu">An existing code updates that subject.</span></p></div>`
+        }
+        let lgF = "";
+        const setLgF = v => { lgF = v; render() };
+        const evTag = a => a === "Time in" ? '<span class="tag Paid">Time in</span>' : a === "Time out" ? '<span class="tag Failed">Time out</span>' : esc(a);
+        async function aLg() {
+            const all = await q(sb.from("audit_log").select("*,profiles(full_name,role)").order("id", { ascending: false }).limit(300));
+            const lg = lgF === "s" ? all.filter(l => /^Time (in|out)$/.test(l.action)) : all;
+            const rows = lg.map(l => `<tr><td data-order="${esc(l.created_at)}">${esc(new Date(l.created_at).toLocaleString())}</td><td>${esc(l.profiles?.full_name || "")}</td><td>${esc(l.profiles?.role || "")}</td><td>${evTag(l.action)}</td></tr>`);
+            const flt = `<div class="inl" style="margin-bottom:12px;max-width:280px"><select onchange="setLgF(this.value)"><option value="">All activity</option><option value="s" ${lgF === "s" ? "selected" : ""}>Time in / Time out only</option></select></div>`;
+            return `<div class="card"><h2>Audit log</h2><p class="mu">Every login is recorded as Time in and every logout as Time out, for students and admins.</p>${flt}${table(["When", "Who", "Role", "Action"], rows, "No activity yet.", true)}</div>`
+        }
+        async function vAdmin() {
+            const groups = [["Main", [["dash", "Dashboard"]]], ["Manage", [["enr", "Enrollments"], ["sec", "Sections"], ["prof", "Professors"], ["gr", "Grades"]]], ["Setup", [["us", "Users"], ["su", "Subjects"], ["lg", "Audit log"]]]];
+            const t = TITLES[tab];
+            const [body, pend] = await Promise.all([{ dash: aDa, enr: aEnr, gr: aGr, sec: aSec, prof: aPr, us: aUs, su: aSu, lg: aLg }[tab](), q(sb.from("enrollments").select("id").eq("status", "Pending"))]);
+            const nav = groups.map(([g, items]) => `<div class="sl">${g}</div>` + items.map(([k, l]) => `<button class="${tab === k ? "on" : ""}" onclick="setTab('${k}')">${ic(k, 18)}<span>${l}</span>${k === "enr" && pend.length ? `<em class="bdg">${pend.length}</em>` : ""}</button>`).join("")).join("");
+            return `<div class="shell"><aside class="side"><div class="sidehd"><i class="lg">${esc((me.full_name || "A").charAt(0).toUpperCase())}</i><div><b>${esc(me.full_name)}</b><small>Administrator</small></div></div>${nav}</aside><section class="pane"><div class="pt"><span class="pti">${ic(tab, 24)}</span><div><h1>${t[0]}</h1><span class="mu">${t[1]}</span></div></div><div class="crumb">Admin / ${t[0]}</div>${body}</section></div>`
+        }
+        function enhance() {
+            if (!window.jQuery || !jQuery.fn.DataTable) return;
+            jQuery("table.dt").each(function () { jQuery(this).DataTable({ pageLength: 10, order: [], columnDefs: [{ orderable: false, searchable: false, targets: "noso" }] }) });
+        }
+        async function render() {
+            after = null;
+            $("#app").className = me && me.role === "Admin" ? "wide" : "";
+            $("#who").textContent = me ? me.full_name + " · " + me.role : "";
+            $("#lo").style.display = me ? "" : "none";
+
+            if (!configured) return void ($("#app").innerHTML = vSetup());
+            if (recovery) return void ($("#app").innerHTML = vReset());
+            if (!me) {
+        
+         if (authMode === "admin-register") {
+            return void (document.getElementById("app").innerHTML = vAdminRegister());
+        } else {
+            return void (document.getElementById("app").innerHTML = (typeof vLogin === "function" ? vLogin() : "") + `
+                <div style="text-align: center; margin-top: 15px; display: flex; justify-content: center; gap: 15px;">
+                    
+                    
+            `);
+        }
+    }
+
+            let h;
+            try {
+                let userRole = me.role || (currentUser?.user_metadata?.role) || "Student";
+                let studentView = typeof vStudentDashboard === "function" ? vStudentDashboard() : (typeof vStudent === "function" ? vStudent() : "");
+
+                h = (userRole === "Admin" ? "" : greet()) + await ({ Student: () => studentView, Admin: vAdmin }[userRole]());
+            } catch (e) {
+                h = `<div class="card"><p>Could not load data: ${esc(e.message)}</p></div>`;
+            }
+
+            $("#app").innerHTML = h;
+            enhance();
+            if (after) after();
+        }
+        (function () {
+            const h = location.hostname;
+            if (!h.endsWith(".github.io")) return;
+            const repo = location.pathname.split("/")[1];
+            const a = el("gh");
+            a.href = "https://github.com/" + h.split(".")[0] + (repo ? "/" + repo : "");
+            a.hidden = false;
+        })();
+        (async () => { if (configured) await loadMe(); render() })();
+    </script>
+
+<script>
+    // 1. I-load ang naka-save na theme pag-buklod ng pahina
+    (function() {
+        const savedTheme = localStorage.getItem("sems_theme") || "dark";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+    })();
+
+    // 2. Function para mag-toggle ng Light at Dark mode
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("sems_theme", newTheme);
+        
+        const btn = document.getElementById("theme-toggle-btn");
+        if (btn) {
+            btn.textContent = newTheme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
+        }
+    }
+
+    let authMode = "login"; // 'login', 'student-register', o 'admin-register'
+
+    function setAuthMode(mode) {
+        authMode = mode;
+        if (typeof render === "function") render();
+    }
+
+    function getAuthHeaderSwitcher(activeType) {
+        return `
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 8px;">
+            <button onclick="setAuthMode('admin-register')" style="flex: 1; padding: 8px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; background: ${activeType === 'admin' ? '#3b82f6' : 'transparent'}; color: #fff;">
+                Admin
+            </button>
+        </div>`;
+    }
+
+    function vAdminRegister() {
+        return `
+        <div class="card" style="max-width: 450px; margin: 30px auto; border-top: 3px solid #6366f1;">
+            ${getAuthHeaderSwitcher('admin')}
+            <h2 style="margin-bottom: 4px;">Admin Registration</h2>
+            <small class="mu" style="display: block; margin-bottom: 16px;">Create a secure administrative account</small>
+            
+            <label style="font-weight: 500; font-size: 13px;">Full Name</label>
+            <input id="admin-reg-name" type="text" placeholder="Administrator Name" style="width: 100%; margin-top: 4px; margin-bottom: 12px;">
+            
+            <label style="font-weight: 500; font-size: 13px;">Email Address</label>
+            <input id="admin-reg-email" type="email" placeholder="admin@sems.edu" style="width: 100%; margin-top: 4px; margin-bottom: 12px;">
+            
+            <label style="font-weight: 500; font-size: 13px;">Password</label>
+            <input id="admin-reg-password" type="password" placeholder="••••••••" style="width: 100%; margin-top: 4px; margin-bottom: 12px;">
+
+            <label style="font-weight: 500; font-size: 13px;">Admin Secret Passcode</label>
+            <input id="admin-secret-code" type="password" placeholder="Enter security key" style="width: 100%; margin-top: 4px; margin-bottom: 16px;">
+            
+            <button class="p w" onclick="handleAdminRegister()" style="width: 100%; font-weight: 600; padding: 10px;">Register Admin</button>
+            
+            <div style="text-align: center; margin-top: 15px;">
+                <small class="mu">Already have an account? <a href="#" onclick="setAuthMode('login')">Sign in</a></small>
+            </div>
+        </div>`;
+    }
+
+    // Malinis at iisang Admin Register function na may tamang role handling
+    async function handleAdminRegister() {
+        const fullName = document.getElementById("admin-reg-name").value.trim();
+        const email = document.getElementById("admin-reg-email").value.trim();
+        const password = document.getElementById("admin-reg-password").value;
+        const secretCode = document.getElementById("admin-secret-code").value.trim();
+
+        const ADMIN_PASSCODE = "SEMS2026Admin"; 
+        if (secretCode !== ADMIN_PASSCODE) {
+            return alert("Invalid Admin Security Code!");
+        }
+
+        if (!fullName || !email || !password) {
+            return alert("Please fill in all required fields.");
+        }
+
+        const { data, error } = await sb.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    full_name: fullName,
+                    role: 'Admin'
+                }
+            }
+        });
+
+        if (error) {
+            return alert(error.message);
+        }
+
+        alert("Admin registration successful! Please log in.");
+        setAuthMode("login");
+    }
+
+   async function sectionProfs(sec) {
+    const map = {};
+    if (!sec) return map;
+    try {
+        const d = await q(sb.from("section_subjects").select("subject_code,professors(full_name,email,department)").eq("section", sec));
+        d.forEach(x => { if (x.professors) map[x.subject_code] = x.professors });
+    } catch (e) { }
+    return map;
+}
+
+async function loadInstructorsDataIntoView() {
+    const container = document.getElementById("instructors-container");
+    if (!container) return;
+    const sec = (me || {}).section;
+    if (!sec) {
+        container.innerHTML = `<section class="card" style="text-align:center;padding:40px"><h3>No section yet</h3><p class="mu">Your professors appear here once the admin assigns you to a section.</p></section>`;
+        return;
+    }
+    const [map, subs] = await Promise.all([sectionProfs(sec), q(sb.from("subjects").select("code,title").order("code"))]);
+    const rows = subs.filter(x => map[x.code]).map(x => `<div style="background: rgba(0,0,0,0.03); padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+            <div><h4 style="margin: 0; font-size: 15px;">${esc(map[x.code].full_name)}</h4>
+            <small class="mu">${esc(map[x.code].department || "Faculty")}${map[x.code].email ? " \u2022 " + esc(map[x.code].email) : ""}</small></div>
+            <span class="tag Approved">${esc(x.code)} \u2013 ${esc(x.title)}</span></div>`).join("");
+    container.innerHTML = `<section class="card"><h3 style="margin-bottom: 4px;">Faculty & Instructors</h3>
+        <small class="mu" style="display:block;margin-bottom:16px;">Professors teaching Section ${esc(sec)}.</small>
+        ${rows ? `<div style="display:grid;gap:12px;">${rows}</div>` : `<p class="mu">No professors have been assigned to your section yet.</p>`}</section>`;
+}
+</script>
+
+
+</body>
+
+</html><!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+    <title>SEMS – Student Information and Enrollment Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f1f4fa;
+            --card: #ffffff;
+            --tx: #141b2d;
+            --mu: #667085;
+            --bd: #e3e8f2;
+            --ac: #3b4cca;
+            --ac2: #7a5af8;
+            --ok: #128a4a;
+            --wn: #b45309;
+            --bad: #c42b2b;
+            --sh: 0 1px 2px rgba(20, 27, 45, .05), 0 8px 24px rgba(20, 27, 45, .07);
+            --r: 16px;
+            color-scheme: light;
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px)
+        }
+
+        @media (prefers-color-scheme:dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #0b1018;
+                --card: #141b27;
+                --tx: #e9eef7;
+                --mu: #98a4b8;
+                --bd: #263042;
+                --ac: #8a95ff;
+                --ac2: #b39bff;
+                --ok: #4ade80;
+                --wn: #fbbf24;
+                --bad: #f87171;
+                --sh: 0 1px 2px rgba(0, 0, 0, .5);
+                color-scheme: dark
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --bg: #0b1018;
+            --card: #141b27;
+            --tx: #e9eef7;
+            --mu: #98a4b8;
+            --bd: #263042;
+            --ac: #8a95ff;
+            --ac2: #b39bff;
+            --ok: #4ade80;
+            --wn: #fbbf24;
+            --bad: #f87171;
+            --sh: 0 1px 2px rgba(0, 0, 0, .5);
+            color-scheme: dark
+        }
+
+        html {
+            scroll-padding-top: env(safe-area-inset-top, 0px)
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background:
+                radial-gradient(ellipse at 12% 8%, color-mix(in srgb, var(--ac) 13%, transparent), transparent 38%),
+                radial-gradient(ellipse at 88% 55%, color-mix(in srgb, var(--ac2) 12%, transparent), transparent 42%),
+                var(--bg);
+            background-attachment: fixed;
+            color: var(--tx);
+            font: 15px/1.6 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: color-mix(in srgb, var(--card) 88%, transparent);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--bd);
+            padding: 12px 24px;
+            display: flex;
+            gap: 14px;
+            align-items: center
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center
+        }
+
+        .brand b {
+            display: block;
+            font-size: 17px;
+            line-height: 1.1;
+            letter-spacing: .02em;
+            font-weight: 800
+        }
+
+        .brand small {
+            color: var(--mu);
+            font-size: 12px
+        }
+
+        .lg {
+            font-style: normal;
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, var(--ac), var(--ac2));
+            color: #fff;
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            box-shadow: 0 4px 12px rgba(91, 76, 230, .35)
+        }
+
+        .sp {
+            flex: 1
+        }
+
+        .pill {
+            background: color-mix(in srgb, var(--ac) 10%, transparent);
+            color: var(--ac);
+            border-radius: 99px;
+            padding: 5px 14px;
+            font-size: 13px;
+            font-weight: 600
+        }
+
+        .pill:empty {
+            display: none
+        }
+
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 28px 18px 40px
+        }
+
+        footer {
+            text-align: center;
+            color: var(--mu);
+            font-size: 12.5px;
+            padding: 18px;
+            border-top: 1px solid var(--bd)
+        }
+
+        .hd {
+            margin: 2px 0 22px
+        }
+
+        .hd h1 {
+            margin: 0 0 2px;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -.02em
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--bd);
+            border-radius: var(--r);
+            padding: 22px;
+            margin-bottom: 18px;
+            box-shadow: var(--sh)
+        }
+
+        h2 {
+            margin: 0 0 14px;
+            font-size: 17px;
+            font-weight: 700
+        }
+
+        button {
+            font: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid var(--bd);
+            background: var(--card);
+            color: var(--tx);
+            border-radius: 10px;
+            padding: 9px 16px;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        button:hover {
+            border-color: var(--ac);
+            transform: translateY(-1px)
+        }
+
+        button.p {
+            background: linear-gradient(135deg, var(--ac), var(--ac2));
+            border-color: transparent;
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(91, 76, 230, .3)
+        }
+
+        button.g {
+            background: var(--ok);
+            border-color: var(--ok);
+            color: #fff
+        }
+
+        button.d {
+            color: var(--bad)
+        }
+
+        button:disabled {
+            opacity: .45;
+            cursor: not-allowed
+        }
+
+        button.w {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px
+        }
+
+        input,
+        select {
+            font: inherit;
+            border: 1px solid var(--bd);
+            background: var(--bg);
+            color: var(--tx);
+            border-radius: 10px;
+            padding: 10px 12px;
+            width: 100%;
+            transition: border-color .15s
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--ac);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--ac) 20%, transparent)
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--tx);
+            margin: 12px 0 5px
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0 14px
+        }
+
+        .tw {
+            overflow-x: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--bd);
+            vertical-align: middle
+        }
+
+        th {
+            color: var(--mu);
+            font-weight: 600;
+            font-size: 11.5px;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            background: var(--bg)
+        }
+
+        th:first-child {
+            border-radius: 8px 0 0 8px
+        }
+
+        th:last-child {
+            border-radius: 0 8px 8px 0
+        }
+
+        tr:last-child td {
+            border-bottom: 0
+        }
+
+        tbody tr:hover td,
+        table tr:not(:first-child):hover td {
+            background: color-mix(in srgb, var(--ac) 4%, transparent)
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 3px 11px;
+            border-radius: 99px;
+            font-size: 12px;
+            font-weight: 600;
+            background: color-mix(in srgb, currentColor 13%, transparent)
+        }
+
+        .Pending {
+            color: var(--wn)
+        }
+
+        .Approved,
+        .Paid,
+        .Passed {
+            color: var(--ok)
+        }
+
+        .Rejected,
+        .Unpaid,
+        .Failed {
+            color: var(--bad)
+        }
+
+        .chk {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 12px 4px;
+            border-bottom: 1px solid var(--bd);
+            color: var(--tx);
+            font-size: 14px;
+            margin: 0;
+            font-weight: 400;
+            cursor: pointer
+        }
+
+        .chk:hover {
+            background: color-mix(in srgb, var(--ac) 4%, transparent)
+        }
+
+        .chk input {
+            width: auto;
+            margin-top: 4px;
+            accent-color: var(--ac)
+        }
+
+        .chk.off {
+            opacity: .5;
+            cursor: not-allowed
+        }
+
+        .mu {
+            color: var(--mu);
+            font-size: 13px
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            margin-bottom: 18px
+        }
+
+        .stat {
+            background: var(--card);
+            border: 1px solid var(--bd);
+            border-radius: var(--r);
+            padding: 16px 18px;
+            box-shadow: var(--sh);
+            border-left: 4px solid var(--ac)
+        }
+
+        .stat b {
+            font-size: 26px;
+            display: block;
+            line-height: 1.3;
+            font-weight: 800
+        }
+
+        .auth {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr;
+            gap: 20px;
+            align-items: stretch;
+            margin-top: 12px
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+            padding: 44px 40px;
+            color: #fff;
+            background: linear-gradient(135deg, #2a2f9e 0%, #5b4ce6 55%, #8f6bff 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 460px
+        }
+
+        .hero::before,
+        .hero::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .08)
+        }
+
+        .hero::before {
+            width: 320px;
+            height: 320px;
+            right: -90px;
+            top: -90px
+        }
+
+        .hero::after {
+            width: 220px;
+            height: 220px;
+            left: -60px;
+            bottom: -70px
+        }
+
+        .hero>* {
+            position: relative
+        }
+
+        .hero h1 {
+            margin: 18px 0 10px;
+            font-size: 38px;
+            line-height: 1.1;
+            font-weight: 800;
+            letter-spacing: -.02em
+        }
+
+        .hero p {
+            opacity: .92;
+            margin: 0 0 22px;
+            font-size: 16px;
+            max-width: 380px
+        }
+
+        .hero .lg {
+            background: rgba(255, 255, 255, .2);
+            box-shadow: none;
+            width: 46px;
+            height: 46px;
+            font-size: 20px
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px
+        }
+
+        .chips span {
+            background: rgba(255, 255, 255, .16);
+            border: 1px solid rgba(255, 255, 255, .25);
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-size: 13px;
+            font-weight: 500
+        }
+
+        .form {
+            margin: 0;
+            padding: 26px
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 5px;
+            margin-bottom: 10px
+        }
+
+        .tabs button {
+            flex: 1;
+            border: 0;
+            background: none;
+            padding: 10px
+        }
+
+        .tabs button:hover {
+            transform: none
+        }
+
+        .tabs button.on {
+            background: var(--card);
+            box-shadow: var(--sh);
+            font-weight: 700;
+            color: var(--ac)
+        }
+
+        .demo {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px
+        }
+
+        #t {
+            position: fixed;
+            left: 50%;
+            bottom: 28px;
+            transform: translateX(-50%);
+            background: var(--tx);
+            color: var(--bg);
+            padding: 12px 20px;
+            border-radius: 12px;
+            opacity: 0;
+            pointer-events: none;
+            transition: .2s;
+            max-width: 90%;
+            z-index: 9;
+            box-shadow: var(--sh);
+            font-weight: 500
+        }
+
+        #t.show {
+            opacity: 1
+        }
+
+        #t.bad {
+            background: var(--bad);
+            color: #fff
+        }
+
+        .inl {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap
+        }
+
+        .inl input {
+            min-width: 100px;
+            flex: 1
+        }
+
+        @media (max-width:760px) {
+            .auth {
+                grid-template-columns: 1fr
+            }
+
+            .hero {
+                padding: 28px 24px;
+                min-height: 0
+            }
+
+            .hero h1 {
+                font-size: 28px
+            }
+
+            header {
+                padding: 10px 14px
+            }
+
+            .brand small {
+                display: none
+            }
+
+            .hd h1 {
+                font-size: 23px
+            }
+        }
+
+        .cbox {
+            position: relative;
+            height: 280px
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 18px
+        }
+
+        .dataTables_wrapper::after {
+            content: "";
+            display: block;
+            clear: both
+        }
+
+        .dataTables_wrapper table.dt {
+            clear: both;
+            margin: 8px 0
+        }
+
+        .dataTables_length {
+            float: left;
+            margin-bottom: 10px
+        }
+
+        .dataTables_filter {
+            float: right;
+            margin-bottom: 10px
+        }
+
+        .dataTables_length label,
+        .dataTables_filter label {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: var(--mu)
+        }
+
+        .dataTables_length select {
+            width: auto;
+            padding: 6px 8px
+        }
+
+        .dataTables_filter input {
+            width: 200px;
+            padding: 7px 10px
+        }
+
+        .dataTables_info {
+            float: left;
+            margin-top: 12px;
+            color: var(--mu);
+            font-size: 13px
+        }
+
+        .dataTables_paginate {
+            float: right;
+            margin-top: 8px
+        }
+
+        .paginate_button {
+            display: inline-block;
+            padding: 5px 12px;
+            margin-left: 4px;
+            border: 1px solid var(--bd);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px
+        }
+
+        .paginate_button:hover {
+            border-color: var(--ac)
+        }
+
+        .paginate_button.current {
+            background: var(--ac);
+            border-color: var(--ac);
+            color: var(--card);
+            font-weight: 600
+        }
+
+        .paginate_button.disabled {
+            opacity: .4;
+            cursor: default;
+            pointer-events: none
+        }
+
+        table.dt th.sorting,
+        table.dt th.sorting_asc,
+        table.dt th.sorting_desc {
+            cursor: pointer;
+            user-select: none
+        }
+
+        table.dt th.sorting::after {
+            content: " \2195";
+            opacity: .35
+        }
+
+        table.dt th.sorting_asc::after {
+            content: " \2191";
+            color: var(--ac)
+        }
+
+        table.dt th.sorting_desc::after {
+            content: " \2193";
+            color: var(--ac)
+        }
+
+        .tech {
+            max-width: 760px;
+            margin: 0 auto 10px;
+            text-align: left
+        }
+
+        .tech summary {
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            color: var(--ac)
+        }
+
+        .tech ul {
+            margin: 10px 0 0;
+            padding-left: 20px;
+            line-height: 1.8
+        }
+
+        main.wide {
+            max-width: 1280px
+        }
+
+        .shell {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr);
+            gap: 22px;
+            align-items: start
+        }
+
+        .side {
+            position: sticky;
+            top: 84px;
+            background: linear-gradient(180deg, #171c44, #0e1230);
+            border-radius: var(--r);
+            padding: 14px;
+            box-shadow: var(--sh);
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            color: #fff
+        }
+
+        .sidehd {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 4px 6px 14px;
+            margin-bottom: 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, .12)
+        }
+
+        .sidehd b {
+            display: block;
+            font-size: 14px;
+            line-height: 1.2;
+            color: #fff
+        }
+
+        .sidehd small {
+            color: rgba(255, 255, 255, .6);
+            font-size: 12px
+        }
+
+        .sl {
+            font-size: 10.5px;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .4);
+            font-weight: 700;
+            padding: 12px 12px 4px
+        }
+
+        .side button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            border: 0;
+            background: none;
+            text-align: left;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, .68);
+            font-weight: 600
+        }
+
+        .side button:hover {
+            background: rgba(255, 255, 255, .08);
+            color: #fff;
+            transform: none
+        }
+
+        .side button.on {
+            background: linear-gradient(135deg, #5b4ce6, #8f6bff);
+            color: #fff;
+            box-shadow: 0 6px 16px rgba(91, 76, 230, .45)
+        }
+
+        .bdg {
+            margin-left: auto;
+            font-style: normal;
+            font-size: 11px;
+            font-weight: 700;
+            background: #f59e0b;
+            color: #1b1300;
+            border-radius: 99px;
+            padding: 1px 8px
+        }
+
+        .pt {
+            display: flex;
+            align-items: center;
+            gap: 14px
+        }
+
+        .pt h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            line-height: 1.1
+        }
+
+        .pti {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            background: color-mix(in srgb, var(--ac) 12%, transparent);
+            color: var(--ac)
+        }
+
+        .crumb {
+            display: inline-block;
+            background: var(--card);
+            border: 1px solid var(--bd);
+            border-radius: 99px;
+            padding: 4px 14px;
+            font-size: 12.5px;
+            color: var(--mu);
+            margin: 12px 0 20px
+        }
+
+        .banner {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 20px;
+            padding: 26px 30px;
+            margin-bottom: 18px;
+            color: #fff;
+            background: linear-gradient(120deg, #2a2f9e 0%, #5b4ce6 55%, #8f6bff 100%)
+        }
+
+        .banner::before {
+            content: "";
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .08);
+            right: -60px;
+            top: -110px
+        }
+
+        .banner>* {
+            position: relative
+        }
+
+        .banner h2 {
+            margin: 6px 0 4px;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            color: #fff
+        }
+
+        .banner p {
+            margin: 0;
+            opacity: .92;
+            max-width: 520px
+        }
+
+        .bd {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            opacity: .8
+        }
+
+        .bb {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+
+        .banner button {
+            background: rgba(255, 255, 255, .16);
+            border: 1px solid rgba(255, 255, 255, .35);
+            color: #fff;
+            font-weight: 600
+        }
+
+        .banner button:hover {
+            border-color: #fff
+        }
+
+        .banner button.solid {
+            background: #fff;
+            color: #3b3fc0;
+            border-color: #fff
+        }
+
+        .sgrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 18px
+        }
+
+        .sc {
+            --c: var(--ac);
+            background: var(--card);
+            border: 1px solid var(--bd);
+            border-radius: var(--r);
+            box-shadow: var(--sh);
+            overflow: hidden
+        }
+
+        .sc.w {
+            --c: var(--wn)
+        }
+
+        .sc.o {
+            --c: var(--ok)
+        }
+
+        .sc.b {
+            --c: var(--bad)
+        }
+
+        .sc.v {
+            --c: var(--ac2)
+        }
+
+        .sct {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px
+        }
+
+        .rw {
+            position: relative;
+            width: 54px;
+            height: 54px;
+            flex: none
+        }
+
+        .rg {
+            position: absolute;
+            inset: 0;
+            width: 54px;
+            height: 54px;
+            transform: rotate(-90deg)
+        }
+
+        .rb {
+            fill: none;
+            stroke: color-mix(in srgb, var(--c) 16%, transparent);
+            stroke-width: 5
+        }
+
+        .rf {
+            fill: none;
+            stroke: var(--c);
+            stroke-width: 5;
+            stroke-linecap: round
+        }
+
+        .ci {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: var(--c)
+        }
+
+        .sct b {
+            display: block;
+            font-size: 26px;
+            line-height: 1.1;
+            font-weight: 800
+        }
+
+        .sct .l {
+            display: block;
+            color: var(--tx);
+            font-size: 13px;
+            font-weight: 600
+        }
+
+        .sct .cap {
+            display: block;
+            color: var(--mu);
+            font-size: 11.5px
+        }
+
+        .sc>button {
+            width: 100%;
+            border: 0;
+            border-top: 1px solid var(--bd);
+            border-radius: 0;
+            background: color-mix(in srgb, var(--c) 6%, transparent);
+            color: var(--c);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 18px
+        }
+
+        .sc>button:hover {
+            transform: none;
+            background: color-mix(in srgb, var(--c) 13%, transparent)
+        }
+
+        .two {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 18px
+        }
+
+        .av {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: #fff;
+            background: linear-gradient(135deg, var(--ac), var(--ac2));
+            flex: none;
+            font-style: normal
+        }
+
+        .qi {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--bd)
+        }
+
+        .qi:last-child {
+            border-bottom: 0
+        }
+
+        .qm {
+            flex: 1;
+            min-width: 0
+        }
+
+        .qm b {
+            display: block;
+            font-size: 14px
+        }
+
+        .qm .mu {
+            font-size: 12.5px
+        }
+
+        .who {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .tl {
+            position: relative;
+            padding-left: 6px
+        }
+
+        .tl::before {
+            content: "";
+            position: absolute;
+            left: 11px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: var(--bd)
+        }
+
+        .ti {
+            position: relative;
+            display: flex;
+            gap: 14px;
+            padding: 8px 0
+        }
+
+        .ti i {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--ac);
+            border: 3px solid var(--card);
+            box-shadow: 0 0 0 2px var(--ac);
+            margin-top: 5px;
+            flex: none;
+            position: relative;
+            z-index: 1
+        }
+
+        .ti b {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 600
+        }
+
+        .ti .mu {
+            font-size: 12px
+        }
+
+        @media (max-width:860px) {
+            .shell {
+                grid-template-columns: 1fr
+            }
+
+            .side {
+                position: static;
+                flex-direction: row;
+                overflow-x: auto;
+                align-items: center
+            }
+
+            .sidehd,
+            .sl {
+                display: none
+            }
+
+            .side button {
+                width: auto;
+                white-space: nowrap
+            }
+        }
+
+        footer a {
+            color: var(--ac);
+            text-decoration: none;
+            font-weight: 600
+        }
+        @media print {
+    /* Itago ang buong layout, sidebar, at mga buttons kapag nag-print */
+    body * {
+        visibility: hidden;
+    }
+    
+    /* I-activate at ipakita lamang ang COR container at ang mga laman nito */
+    #cor-printable-area, #cor-printable-area * {
+        visibility: visible;
+    }
+    
+    /* Ayusin ang pwesto para magsimula sa pinakataas ng papel */
+    #cor-printable-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white !important;
+        color: black !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 20px !important;
+    }
+
+    /* Siguraduhing maging kulay itim ang mga text at borders para sa print */
+    #cor-printable-area h2, 
+    #cor-printable-area h3, 
+    #cor-printable-area b, 
+    #cor-printable-area th, 
+    #cor-printable-area td {
+        color: black !important;
+    }
+
+    /* Itago ang Print button mismo sa mismong papel */
+    button {
+        display: none !important;
+    }
+}
+        
+    </style>
+
+    <!-- SEMS Cerulean Blue theme (added) -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* SEMS Cerulean Blue theme (Pantone 15-4020) */
+
+:root{
+  --bg:#CBDAEC; --card:#F6F9FD; --tx:#1B2638; --mu:#3A4A63; --bd:#B9CCE3;
+  --ac:#2F5382; --ac2:#4F78A8; --ok:#1F7A4D; --wn:#9A5B0E; --bad:#B3261E;
+  --sh:0 1px 2px rgba(27,38,56,.06),0 10px 28px rgba(47,83,130,.16);
+  --text-main:var(--tx); --border-color:var(--bd);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1726; --card:#16233A; --tx:#E8EEF7; --mu:#9DB0C9; --bd:#2A3B57;
+    --ac:#6A90C0; --ac2:#4A72A3; --ok:#4ade80; --wn:#fbbf24; --bad:#f87171;
+    --sh:0 1px 2px rgba(0,0,0,.5); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1726; --card:#16233A; --tx:#E8EEF7; --mu:#9DB0C9; --bd:#2A3B57;
+  --ac:#6A90C0; --ac2:#4A72A3; --ok:#4ade80; --wn:#fbbf24; --bad:#f87171;
+  --sh:0 1px 2px rgba(0,0,0,.5); color-scheme:dark;
+}
+
+/* Gradients and shadows that were hard-coded purple */
+.lg{box-shadow:0 4px 12px rgba(47,83,130,.35)}
+button.p{box-shadow:0 4px 12px rgba(47,83,130,.3)}
+.hero{background:linear-gradient(135deg,#1F3A5F 0%,#3F6593 55%,#7FA1CC 100%)}
+.banner{background:linear-gradient(120deg,#1F3A5F 0%,#3F6593 55%,#7FA1CC 100%)}
+.banner button.solid{color:#2F5382}
+.side{background:linear-gradient(180deg,#1B3354,#0F1F36)}
+.side button.on{background:linear-gradient(135deg,#3F6593,#7FA1CC);box-shadow:0 6px 16px rgba(47,83,130,.45)}
+
+/* Serif headings like the Pantone swatch */
+h1,.hd h1,.hero h1,.pt h1,.banner h2{font-family:"Cormorant Garamond",Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:-.01em}
+.hd h1{font-size:36px;line-height:1.1}
+.pt h1{font-size:34px}
+.banner h2{font-size:34px}
+.hero h1{font-size:50px;line-height:1.02}
+.brand b{font-family:"Cormorant Garamond",Georgia,serif;font-size:22px;font-weight:700}
+@media (max-width:760px){.hero h1{font-size:36px}.hd h1{font-size:29px}.pt h1{font-size:28px}.banner h2{font-size:28px}}
+
+/* Inline colors in the student pages that were made for the dark theme (screen only, so printing is unchanged) */
+@media screen{
+  :root:not([data-theme="dark"]) [style*="color: #60a5fa"]{color:var(--ac)!important}
+  :root:not([data-theme="dark"]) [style*="color: #34d399"]{color:var(--ok)!important}
+  :root:not([data-theme="dark"]) [style*="color: #f87171"]{color:var(--bad)!important}
+  [style*="rgba(255,255,255,0.05)"],[style*="rgba(255,255,255,0.1)"]{border-color:var(--bd)!important}
+  #cor-printable-area{background:var(--card)!important;border:1px solid var(--bd)!important}
+}
+</style>
+<script>
+/* Start everyone in the light Cerulean theme once. After that, the Toggle Theme button choice is remembered. */
+try{
+  if(!localStorage.getItem("sems_theme_cerulean")){
+    localStorage.setItem("sems_theme","light");
+    localStorage.setItem("sems_theme_cerulean","1");
+  }
+}catch(e){}
+</script>
+<style>.bad-input{border-color:var(--bad)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--bad) 22%,transparent)!important}</style>
+</head>
+
+<body>
+    <header>
+        
+        <div class="brand"><i class="lg">S</i>
+            <div><b>SEMS</b><small>Student Enrollment and Records</small></div>
+            <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: rgba(59, 130, 246, 0.1); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 500;">
+    🌓 Toggle Theme
+</button>
+        </div>
+        <div class="sp"></div><span id="who" class="pill"></span><button id="lo" onclick="logout()"
+            style="display:none">Log out</button>
+    </header>
+    <main id="app"></main>
+    <footer>
+        <details class="tech">
+            <summary>Platform technologies used</summary>
+            <ul>
+                <li><b>Supabase</b> as the cloud service for the PostgreSQL database, authentication and hosted API</li>
+                <li><b>supabase-js</b> as the SDK for sign in, queries and RPC calls from the browser</li>
+                <li><b>Supabase REST and RPC endpoints</b> as the web service that carries enrollment, payment, approval
+                    and grading requests</li>
+                <li><b>JSON over HTTPS</b> as the interoperability format between the page and the backend</li>
+                <li><b>Chart.js</b> as a library for the admin dashboard charts</li>
+                <li><b>jsPDF</b> as a library for the downloadable enrollment slip</li>
+                <li><b>DataTables with jQuery</b> as a plug-in for searching, sorting and paging tables</li>
+                <li><b>Git and GitHub Pages</b> for version control, collaboration and deployment</li>
+            </ul>
+        </details>
+        SEMS · Student Information and Enrollment Management System · Platform Technologies Final Project <a id="gh"
+            hidden target="_blank" rel="noopener"> · Source code on GitHub</a>
+    </footer>
+    <div id="t"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script>
+        const CFG = { url: "https://edgbbujkmodutaarblne.supabase.co", key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkZ2JidWprbW9kdXRhYXJibG5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwNDYyMTYsImV4cCI6MjEwOTYyMjIxNn0.01Hn5MZq591SFmgAdUOP0rWSKkrH8ndurVwx-75CnZo" };
+        const configured = !CFG.url.includes("YOUR_");
+        const sb = configured ? supabase.createClient(CFG.url, CFG.key) : null;
+        let recovery = /type=recovery/.test(location.hash + location.search);
+        if (sb) sb.auth.onAuthStateChange(ev => { if (ev === "PASSWORD_RECOVERY") { recovery = true; setTimeout(render, 0) } });
+        const $ = s => document.querySelector(s);
+        const el = id => document.getElementById(id);
+        const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+        function toast(m, bad) { const t = $("#t"); t.textContent = m; t.className = "show " + (bad ? "bad" : ""); clearTimeout(toast.h); toast.h = setTimeout(() => t.className = "", 3500) }
+        const peso = n => "₱" + Number(n).toLocaleString();
+        const tag = s => `<span class="tag ${s}">${s}</span>`;
+        const q = async p => { const { data, error } = await p; if (error) throw error; return data };
+        const call = async (p, ok) => { const { error } = await p; if (error) toast(error.message, 1); else toast(ok); await render() };
+        let me = null, mode = "in", SUBS = [], tab = "dash", after = null, charts = [], SLIP = null;
+        const I = {
+            prof: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>',
+            sec: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+            dash: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+            enr: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>',
+            gr: '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+            us: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+            su: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+            lg: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+            cash: '<path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+            warn: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>',
+            ok: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/>',
+            arrow: '<path d="M5 12h14M12 5l7 7"/>'
+        };
+        const ic = (k, s) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[k]}</svg>`;
+        const TITLES = { dash: ["Dashboard", "Overview of the whole system"], enr: ["Enrollments", "Requests and payments"], gr: ["Grades", "Post grades for enrolled students"], sec: ["Sections", "Assign students to sections"], prof: ["Professors", "Assign professors per subject for each section"], us: ["Users", "Accounts and roles"], su: ["Subjects", "Subject list and prerequisites"], lg: ["Audit log", "Recent system activity"] };
+        const ago = d => { const m = Math.floor((Date.now() - new Date(d)) / 60000); if (m < 1) return "just now"; if (m < 60) return m + " min ago"; if (m < 1440) return Math.floor(m / 60) + " hr ago"; const n = Math.floor(m / 1440); return n + (n > 1 ? " days ago" : " day ago") };
+        const ring = (pct, icon) => `<div class="rw"><svg class="rg" viewBox="0 0 54 54"><circle class="rb" cx="27" cy="27" r="22"/><circle class="rf" cx="27" cy="27" r="22" stroke-dasharray="${(Math.max(0, Math.min(100, pct)) * 1.3823).toFixed(1)} 138.23"/></svg><span class="ci">${ic(icon, 20)}</span></div>`;
+        const avatar = n => `<span class="av">${esc((n || "?").trim().charAt(0).toUpperCase())}</span>`;
+        const codes = e => (e.enrollment_items || []).map(i => i.subject_code);
+        const table = (heads, rows, empty, sortable) => {
+            if (!rows.length) return `<p class="mu">${empty}</p>`;
+            const th = heads.map(h => Array.isArray(h) ? `<th class="noso">${h[0]}</th>` : `<th>${h}</th>`).join("");
+            return `<div class="tw"><table class="${sortable ? "dt" : ""}"><thead><tr>${th}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`
+        };
+       async function loadMe() {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) return;
+
+    // 1. Kunin ang profile details ng user
+    const { data: profile } = await sb
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    // 2. Kunin ang enrollment record mula sa 'enrollments' table
+    const { data: enrollment } = await sb
+        .from('enrollments')
+        .select('id, status')
+        .eq('student_id', user.id)
+        .maybeSingle();
+
+    let totalUnits = 0;
+    let hasEnlisted = false;
+
+    if (enrollment) {
+        // 3. Kunin ang mga in-enroll na subjects para mabilang ang units at malaman kung nag-enlist na
+        const { data: items } = await sb
+            .from('enrollment_items')
+            .select('subject_code')
+            .eq('enrollment_id', enrollment.id);
+        
+        if (items && items.length > 0) {
+            hasEnlisted = true;
+            totalUnits = items.length * 3; // 3 units bawat subject
+        }
+    }
+
+    // 4. Pagsamahin sa 'me' object kasama ang mga status flag
+    me = { 
+        ...user, 
+        ...(profile || {}),
+        enrollment_status: enrollment ? enrollment.status : 'Pending Verification',
+        total_units: totalUnits,
+        has_enlisted: hasEnlisted // Dito natin ibabatay kung naka-check na ang Enlistment
+    };
+}
+        function setMode(m) { mode = m; render() }
+        async function sendReset() {
+            const email = $("#fp-email").value.trim();
+            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast("Enter a valid email address.", 1);
+            const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+            if (error) return toast(error.message, 1);
+            toast("If that email is registered, a reset link has been sent. Check your inbox and spam folder.");
+            mode = "in"; render();
+        }
+        function vReset() {
+            return `<div style="max-width:460px;margin:30px auto"><section class="card form"><h2>Choose a new password</h2><p class="mu">You opened a password reset link. Enter your new password below.</p><label>New password</label><input id="np" type="password" autocomplete="new-password"><label>Confirm new password</label><input id="np2" type="password" autocomplete="new-password"><p class="mu">8+ characters with letters and digits.</p><button class="p w" onclick="doReset()">Update password</button></section></div>`;
+        }
+        async function doReset() {
+            const pw = $("#np").value;
+            if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/\d/.test(pw)) return toast("Weak password: needs 8+ characters with letters and numbers.", 1);
+            if (pw !== $("#np2").value) return toast("Passwords do not match.", 1);
+            const { error } = await sb.auth.updateUser({ password: pw });
+            if (error) return toast(error.message, 1);
+            recovery = false; await sb.auth.signOut(); me = null; mode = "in";
+            history.replaceState(null, "", location.pathname);
+            render(); toast("Password updated. Please sign in with your new password.");
+        }
+        function checkContact(inp, force) {
+            const n = inp.value.length, hint = $("#contact-hint");
+            const bad = n !== 11 && (n > 0 || force);
+            inp.classList.toggle("bad-input", bad);
+            if (!hint) return;
+            hint.style.color = bad ? "var(--bad)" : (n === 11 ? "var(--ok)" : "var(--mu)");
+            hint.textContent = bad ? "Contact number needs 11 digits (" + n + "/11)" : (n === 11 ? "\u2713 Valid contact number" : "Must be exactly 11 digits");
+        }
+        async function login() { const { error } = await sb.auth.signInWithPassword({ email: $("#u").value.trim(), password: $("#p").value }); if (error) return toast(error.message, 1); await loadMe(); await sb.rpc("log_session", { p_event: "Time in" }); render() }
+        async function logout() { try { await sb.rpc("log_session", { p_event: "Time out" }) } catch (e) { } await sb.auth.signOut(); me = null; tab = "dash"; render() }
+        async function register() {
+    const v = i => $("#" + i).value;
+    const firstName = v("rfn").trim();
+    const middleName = v("rmn").trim();
+    const lastName = v("rln").trim();
+    const email = v("re").trim();
+    const pw = v("rw");
+
+    // Kunin ang mga value mula sa mga ID ng input sa iyong registration form
+    const birthdate = v("reg-birthdate");
+    const age = v("reg-age");
+    const gender = v("reg-gender");
+    const contact = v("reg-contact");
+    const address = v("reg-address");
+    const program = v("rg");
+
+    if (!firstName || !lastName) return toast("Enter your First name and Last name.", 1);
+    if (contact.length !== 11) { checkContact($("#reg-contact"), true); $("#reg-contact").focus(); return toast("Contact number must be exactly 11 digits (e.g. 09123456789).", 1); }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast("Enter a valid email address.", 1);
+    if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/\d/.test(pw)) {
+        return toast("Weak password: Must be at least 8 characters with letters and numbers.", 1);
+    }
+    if (pw !== v("rw2")) return toast("Passwords do not match.", 1);
+
+    const fullName = `${firstName} ${middleName ? middleName + ' ' : ''}${lastName}`;
+
+    // 1. Sign up sa Supabase Auth
+    const { data, error } = await sb.auth.signUp({
+        email,
+        password: pw,
+        options: {
+            data: {
+                full_name: fullName,
+                program: program,
+                birthdate: v("reg-birthdate") || null,
+                age: v("reg-age") ? parseInt(v("reg-age")) : null,
+                gender: v("reg-gender") || null,
+                contact: v("reg-contact") || null,
+                address: v("reg-address") || null
+            }
+        }
+    });
+
+    if (error) return toast(error.message, 1);
+
+    // 2. I-update o i-insert nang direktang gamit ang tamang column names sa 'profiles' table
+    if (data.user) {
+        const { error: updateError } = await sb.from('profiles').upsert({
+            id: data.user.id,
+            full_name: fullName,
+            email: email,
+            program: program,
+            role: 'Student',
+            birthdate: birthdate ? birthdate : null,
+            gender: gender ? gender : null,
+            age: age ? parseInt(age) : null,
+            contact_no: contact ? contact : null,
+            address: address ? address : null
+        });
+
+        if (updateError) {
+            console.error("Error sa pag-save ng profile details:", updateError.message);
+        }
+    }
+
+    if (data.session) {
+        await loadMe();
+        toast("Account created. Welcome!");
+        render();
+    } else {
+        mode = "in";
+        render();
+        toast("Check your email to confirm your account, then sign in.");
+    }
+}
+        function calculateAge() {
+    const birthdateVal = document.getElementById("reg-birthdate").value;
+    const ageInput = document.getElementById("reg-age");
+    
+    if (!birthdateVal || !ageInput) {
+        if (ageInput) ageInput.value = "";
+        return;
+    }
+
+    const dob = new Date(birthdateVal);
+    const today = new Date();
+    
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+        age--;
+    }
+
+    ageInput.value = age >= 0 ? age : 0;
+}
+        const greet = () => `<div class="hd"><h1>Welcome, ${esc(me.full_name.split(" ")[0] || me.role)}</h1><span class="mu">${{ Student: "Enroll in subjects and track your grades.", Admin: "Manage enrollments, payments, grades, subjects and users." }[me.role]}</span></div>`;
+        function vSetup() { return `<div class="card" style="max-width:640px;margin:30px auto"><h2>Setup needed</h2><p>Open <b>index.html</b>, find <code>CFG</code> near the top of the script and paste your Supabase <b>Project URL</b> and <b>anon key</b>. See README.md for the full steps.</p></div>` }
+        function vLogin() {
+            const reg = mode === "up"; return `<div class="auth"><section class="hero"><i class="lg">S</i><h1>Enroll online.<br>Skip the line.</h1><p>One secure portal for students and school administrators.</p><div class="chips"><span>Prerequisite checks</span><span>Payment verification</span><span>Admin approval</span><span>Instant grades</span></div></section>
+<section class="card form"><div class="tabs"><button class="${reg ? "" : "on"}" onclick="setMode('in')">Sign in</button><button class="${reg ? "on" : ""}" onclick="setMode('up')">Register</button></div>` + (mode === "fp" ? `<h2 style="margin-top:8px">Reset your password</h2><p class="mu">Enter the email you registered with. We will send you a link to choose a new password.</p><label>Email</label><input id="fp-email" type="email" autocomplete="email" onkeydown="event.key==='Enter'&&sendReset()"><button class="p w" style="margin-top:12px" onclick="sendReset()">Send reset link</button><p style="text-align:center;margin-top:10px"><a href="#" onclick="event.preventDefault();setMode('in')">Back to sign in</a></p>` : reg ?
+                    `<div class="row">
+                    <div><label>First name</label><input id="rfn" autocomplete="given-name"></div>
+                    <div><label>Last name</label><input id="rln" autocomplete="family-name"></div>
+                 </div>
+                 <label>Middle name (Optional)</label><input id="rmn" autocomplete="additional-name">
+                 <label>Email</label><input id="re" type="email" autocomplete="email">
+                 <label>Program</label>
+                 <select id="rg">
+                     <option>BS Information Technology</option>
+                     <option>BS Computer Science</option>
+                 </select>
+
+                <div style="display: flex; gap: 10px; margin-top: 12px;">
+    <div style="flex: 2;">
+        <label style="font-weight: 500; font-size: 13px; display: block;">Birthdate</label>
+        <input id="reg-birthdate" type="date" onchange="calculateAge()" style="width: 100%; margin-top: 4px;">
+    </div>
+    <div style="flex: 1;">
+        <label style="font-weight: 500; font-size: 13px; display: block;">Age</label>
+        <!-- Nilagyan natin ng readonly para hindi na ma-type manually, kusang magkakalagay -->
+        <input id="reg-age" type="number" placeholder="19" readonly style="width: 100%; margin-top: 4px; background: rgba(0,0,0,0.05); cursor: not-allowed;">
+    </div>
+    <div style="flex: 2;">
+        <label>Gender</label>
+        <select id="reg-gender" style="width: 100%; padding: 8px;">
+            <option value="">Select</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+</div>
+
+<label style="margin-top: 12px; display: block;">Contact Number</label>
+<input id="reg-contact" type="text" placeholder="09123456789" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11); checkContact(this)" style="width: 100%; margin-top: 4px;">
+<small id="contact-hint" class="mu" style="display:block;margin-top:4px;font-size:11.5px;">Must be exactly 11 digits</small>
+
+<label style="margin-top: 12px; display: block;">Home Address</label>
+<input id="reg-address" type="text" placeholder="Brgy., Town, Province">
+<!-- ============================================ -->
+
+
+                 <div class="row">
+                    <div>
+                        <label>Password</label>
+                        <input id="rw" type="password" autocomplete="new-password" oninput="checkPasswordStrength()">
+                        <small id="pw-hint" class="mu" style="display:block; margin-top:4px; font-size:11.5px;">Must be 8+ characters with letters & numbers</small>
+                    </div>
+                    <div>
+                        <label>Confirm password</label>
+                        <input id="rw2" type="password" autocomplete="new-password">
+                    </div>
+                 </div>
+                 <button class="p w" style="margin-top:12px;" onclick="register()">Create student account</button>` :
+                    `<label>Email</label><input id="u" type="email" autocomplete="username"><label>Password</label><input id="p" type="password" autocomplete="current-password" onkeydown="event.key==='Enter'&&login()"><p><button class="p w" onclick="login()">Sign in</button></p><p style="text-align:center;margin:6px 0 0"><a href="#" onclick="event.preventDefault();setMode('fp')">Forgot password?</a></p>`) + `</section></div>`
+        }
+
+
+        function checkPasswordStrength() {
+            const pw = $("#rw").value;
+            const hint = $("#pw-hint");
+            if (!hint) return;
+
+            const hasLen = pw.length >= 8;
+            const hasLetter = /[A-Za-z]/.test(pw);
+            const hasNum = /\d/.test(pw);
+
+            if (pw.length === 0) {
+                hint.style.color = "var(--mu)";
+                hint.textContent = "Must be 8+ characters with letters & numbers";
+                return;
+            }
+
+            if (hasLen && hasLetter && hasNum) {
+                hint.style.color = "#10b981"; // Kulay berde (Strong)
+                hint.textContent = "✓ Strong password";
+            } else {
+                hint.style.color = "#ef4444"; // Kulay pula (Weak/Kulang pa)
+                let missing = [];
+                if (!hasLen) missing.push("8+ chars");
+                if (!hasLetter) missing.push("letters");
+                if (!hasNum) missing.push("numbers");
+                hint.textContent = "Weak: needs " + missing.join(", ");
+            }
+        }
+        function downloadSlip() {
+            if (!SLIP || typeof window.jspdf === "undefined") return toast("PDF tool is not available right now.", 1);
+            const { enr, subs } = SLIP, d = new window.jspdf.jsPDF();
+            let y = 22, total = 0;
+            const line = t => { d.text(t, 20, y); y += 8 };
+            d.setFontSize(18); d.text("SEMS Enrollment Slip", 20, y); y += 12;
+            d.setFontSize(11);
+            line("Student: " + me.full_name);
+            line("Student ID: " + me.student_no);
+            line("Program: " + me.program);
+            line("Enrollment no: " + enr.id);
+            line("Status: " + enr.status);
+            line("Payment: " + (enr.paid ? "Paid, OR " + enr.or_no : "Unpaid"));
+            y += 4;
+            d.setFontSize(13); line("Subjects"); d.setFontSize(11);
+            for (const c of codes(enr)) {
+                const s = subs.find(x => x.code === c);
+                total += s.units;
+                line(c + "   " + s.title + "   " + s.units + " units");
+            }
+            y += 2;
+            line("Total units: " + total);
+            line("Assessed fee: PHP " + Number(enr.fee).toLocaleString());
+            y += 6;
+            d.setFontSize(9); d.text("Generated on " + new Date().toLocaleString(), 20, y);
+            d.save("enrollment-slip-" + me.student_no + ".pdf");
+        }
+        async function vStudent() {
+            const [subs, enr, gr] = await Promise.all([q(sb.from("subjects").select("*").order("code")), q(sb.from("enrollments").select("*,enrollment_items(subject_code)").order("id")), q(sb.from("grades").select("*"))]); SUBS = subs;
+            const sub = c => subs.find(s => s.code === c), pass = c => gr.some(g => g.subject_code === c && g.grade <= 3);
+            const cur = enr.find(e => e.status !== "Rejected"), last = enr[enr.length - 1];
+            SLIP = cur ? { enr: cur, subs } : null;
+            const tu = gr.reduce((a, g) => a + sub(g.subject_code).units, 0), gwa = gr.length ? (gr.reduce((a, g) => a + g.grade * sub(g.subject_code).units, 0) / tu).toFixed(2) : "–";
+            let enrl;
+            if (cur) enrl = table(["Subject", "Units"], codes(cur).map(s => `<tr><td>${s} – ${esc(sub(s).title)}</td><td>${sub(s).units}</td></tr>`), "") + `<p>Status: ${tag(cur.status)} Payment: ${tag(cur.paid ? "Paid" : "Unpaid")} <span class="mu">Assessed fee ${peso(cur.fee)}${cur.or_no ? " · OR " + esc(cur.or_no) : ""}</span></p><button class="p" onclick="downloadSlip()">Download enrollment slip (PDF)</button>`;
+            else enrl = (last ? `<p class="mu">Last request rejected: ${esc(last.note)}</p>` : "") + subs.filter(s => !pass(s.code)).map(s => { const ok = !s.prereq || pass(s.prereq); return `<label class="chk ${ok ? "" : "off"}"><input type="checkbox" class="sub" value="${s.code}" ${ok ? "" : "disabled"} onchange="calc()"><span>${s.code} – ${esc(s.title)} <span class="mu">(${s.units} units${s.prereq ? " · prereq " + s.prereq : ""}${ok ? "" : " – not met"})</span></span></label>` }).join("") + `<p>Selected: <b id="tu">0</b> units · Estimated fee: <b id="tf">${peso(0)}</b> <span class="mu">(₱1,000/unit + ₱1,500 misc.)</span></p><button class="p" onclick="submitEnroll()">Submit enrollment</button>`;
+            const grows = gr.map(g => `<tr><td>${g.subject_code} – ${esc(sub(g.subject_code).title)}</td><td>${Number(g.grade).toFixed(2)}</td><td>${tag(g.grade <= 3 ? "Passed" : "Failed")}</td></tr>`);
+            return `<div class="stats"><div class="stat"><span class="mu">Student ID</span><b style="font-size:17px">${esc(me.student_no)}</b></div><div class="stat"><span class="mu">Program</span><b style="font-size:15px">${esc(me.program)}</b></div><div class="stat"><span class="mu">GWA</span><b>${gwa}</b></div></div>
+<div class="card"><h2>Online enrollment</h2>${enrl}</div>
+<div class="card"><h2>Grades</h2>${table(["Subject", "Grade", "Remarks"], grows, "No grades yet.")}</div>`
+        }
+        let studentTab = "overview";
+
+        function setStudentTab(tabName) {
+            studentTab = tabName;
+            render();
+        }
+        const availableSubjects = [
+    { code: "ITEC101", title: "Introduction to Computing", units: 3, prereq: "None" },
+    { code: "ITEC102", title: "Computer Programming 1", units: 3, prereq: "None" },
+    { code: "ITEC103", title: "Computer Programming 2", units: 3, prereq: "ITEC102" },
+    { code: "ITEC104", title: "Web Systems and Technologies", units: 3, prereq: "ITEC101" },
+    { code: "ITEC205", title: "Information Management", units: 3, prereq: "ITEC103" },
+    { code: "PLATT", title: "Platform Technologies", units: 3, prereq: "ITEC205" },
+    { code: "GEC101", title: "Understanding the Self", units: 3, prereq: "None" }
+];
+
+let enrolledSubjectCodes = [];
+
+function toggleSubjectSelection(code) {
+    if (enrolledSubjectCodes.includes(code)) {
+        enrolledSubjectCodes = enrolledSubjectCodes.filter(c => c !== code);
+    } else {
+        enrolledSubjectCodes.push(code);
+    }
+    render();
+}
+
+function vSubjectSelection() {
+    let totalUnitsSelected = enrolledSubjectCodes.reduce((sum, code) => {
+        let subj = availableSubjects.find(s => s.code === code);
+        return sum + (subj ? subj.units : 0);
+    }, 0);
+
+    let rows = availableSubjects.map(subj => {
+        let isSelected = enrolledSubjectCodes.includes(subj.code);
+        return `
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 12px; font-family: monospace; font-weight: 600; color: #60a5fa;">${subj.code}</td>
+            <td style="padding: 12px;">${subj.title}</td>
+            <td style="padding: 12px; font-weight: 500;">${subj.units}</td>
+            <td style="padding: 12px;" class="mu">${subj.prereq}</td>
+            <td style="padding: 12px; text-align: right;">
+                <button onclick="toggleSubjectSelection('${subj.code}')" style="background: ${isSelected ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 130, 246, 0.15)'}; color: ${isSelected ? '#f87171' : '#60a5fa'}; border: 1px solid ${isSelected ? 'rgba(239, 68, 68, 0.3)' : 'rgba(59, 130, 246, 0.3)'}; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                    ${isSelected ? 'Drop' : 'Select'}
+                </button>
+            </td>
+        </tr>`;
+    }).join("");
+
+    return `
+    <section class="card" style="border-top: 3px solid #3b82f6;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+                <h3>📚 Subject Enlistment</h3>
+                <small class="mu">Select subjects for your enrollment application (Max 21 units).</small>
+            </div>
+            <div style="text-align: right; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 8px 16px; border-radius: 8px;">
+                <small class="mu" style="display: block; text-transform: uppercase; font-size: 10px;">Total Units</small>
+                <span style="font-size: 1.25rem; font-weight: bold; color: #60a5fa; font-family: monospace;">${totalUnitsSelected} <span style="font-size: 0.85rem; color: var(--mu);">/ 21 Max</span></span>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--mu); font-size: 0.85rem;">
+                        <th style="padding: 10px;">Code</th>
+                        <th style="padding: 10px;">Title</th>
+                        <th style="padding: 10px;">Units</th>
+                        <th style="padding: 10px;">Prerequisite</th>
+                        <th style="padding: 10px; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+            <button class="p" onclick="submitEnlistmentToDatabase()" style="font-weight: 600; padding: 10px 20px;">Submit Enrollment</button>
+        </div>
+    </section>`;
+}
+
+async function submitEnlistmentToDatabase() {
+    if (enrolledSubjectCodes.length === 0) {
+        return toast("Please select at least one subject.", 1);
+    }
+
+    const { error } = await sb.rpc("submit_enrollment", {
+        codes: enrolledSubjectCodes
+    });
+
+    if (error) {
+        return toast(error.message, 1);
+    }
+
+    toast("Enrollment submitted successfully!");
+    enrolledSubjectCodes = [];
+    setStudentTab("overview");
+}
+// Function para ipakita ang Listahan ng Instructors sa Student Portal
+async function loadStudentInstructorsView() {
+    const appContainer = document.getElementById("app");
+    if (!appContainer) return;
+
+    // 1. Kunin ang listahan ng instructors mula sa Supabase table (Halimbawa: 'profiles')
+    // Siguraduhing tugma sa pangalan ng table mo kung saan naka-store ang mga user/instructor
+    const { data: instructors, error } = await sb
+        .from('profiles')
+        .select('*')
+        .eq('role', 'Instructor');
+
+    if (error) {
+        console.error("Error sa pag-load ng instructors:", error.message);
+    }
+
+    // 2. Buuin ang UI gamit ang parehong card style ng dashboard mo
+    let html = `
+    <div class="card" style="max-width: 850px; margin: 30px auto; padding: 25px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h2 style="margin: 0; font-size: 22px;">Faculty & Instructors</h2>
+                <small class="mu">Listahan ng mga guro na nagtuturo sa iyong kurso at departamento</small>
+            </div>
+            <button onclick="loadStudentDashboard()" class="p" style="padding: 6px 14px; font-size: 13px; cursor: pointer; border-radius: 6px; border: none;">Bumalik</button>
+        </div>
+        <hr style="border: none; border-top: 1px solid rgba(0,0,0,0.1); margin-bottom: 20px;">
+    `;
+
+    if (!instructors || instructors.length === 0) {
+        // Fallback kung wala pang na-encode o kung gusto mo munang makita ang itsura
+        html += `
+        <div style="display: grid; gap: 15px;">
+            <div style="background: rgba(0,0,0,0.03); padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4 style="margin: 0; font-size: 15px;">Prof. Juan Dela Cruz</h4>
+                    <small class="mu">Department of Computer Science • jdelacruz@sems.edu</small>
+                </div>
+                <span style="background: #3b82f6; color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;">Instructor</span>
+            </div>
+            <div style="background: rgba(0,0,0,0.03); padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4 style="margin: 0; font-size: 15px;">Dr. Maria Santos</h4>
+                    <small class="mu">Information Technology Dept • msantos@sems.edu</small>
+                </div>
+                <span style="background: #3b82f6; color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;">Instructor</span>
+            </div>
+        </div>`;
+    } else {
+        html += `<div style="display: grid; gap: 15px;">`;
+        instructors.forEach(inst => {
+            html += `
+            <div style="background: rgba(0,0,0,0.03); padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4 style="margin: 0; font-size: 15px;">${inst.full_name || 'Walang Pangalan'}</h4>
+                    <small class="mu">${inst.department || 'General Education'} • ${inst.email}</small>
+                </div>
+                <span style="background: #3b82f6; color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;">Instructor</span>
+            </div>`;
+        });
+        html += `</div>`;
+    }
+
+    html += `</div>`;
+    appContainer.innerHTML = html;
+}
+
+
+        function vStudentDashboard() {
+    const user = me || {};
+    const meta = user.user_metadata || {};
+    const fullName = user.full_name || meta.full_name || "Student";
+    const program = user.program || meta.program || "BS Information Technology";
+    const status = user.enrollment_status || meta.enrollment_status || "Pending Verification";
+    const totalUnits = user.total_units || meta.total_units || 0;
+
+    let content = "";
+
+    // Suriin ang status galing sa database
+    // Kunin ang mga status mula sa user/me object
+    const enrollmentStatus = user.enrollment_status || "Pending Verification";
+    const isApproved = enrollmentStatus === "Approved";
+    const hasEnlisted = user.has_enlisted || false;
+    
+    // Mga kulay para sa active/done kumpara sa pending
+    const activeStyle = "background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 6px 12px; border-radius: 6px; font-weight: 500;";
+    const pendingStyle = "opacity: 0.5; padding: 6px 12px;";
+
+    if (studentTab === "overview") {
+        content = `
+        <div class="row" style="gap: 16px; margin-bottom: 20px;">
+            <section class="card" style="position: relative; overflow: hidden; border-left: 4px solid #3b82f6; flex: 1;">
+                <div style="position: absolute; right: 16px; top: 16px; opacity: 0.15; font-size: 3rem;">⚡</div>
+                <small class="mu" style="text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Status</small>
+                <h2 style="margin: 8px 0; color: #60a5fa; font-family: monospace;">${enrollmentStatus}</h2>
+                <small class="mu">Academic Year 2026-2027 • 1st Semester</small>
+            </section>
+            
+            <section class="card" style="position: relative; overflow: hidden; border-left: 4px solid #10b981; flex: 1;">
+                <div style="position: absolute; right: 16px; top: 16px; opacity: 0.15; font-size: 3rem;">📚</div>
+                <small class="mu" style="text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Load Units</small>
+                <h2 style="margin: 8px 0; color: #34d399; font-family: monospace;">${totalUnits} <span style="font-size: 1rem; color: var(--mu);">/ 24 Max</span></h2>
+                <small class="mu">${program}</small>
+            </section>
+        </div>
+
+        <section class="card" style="border: 1px solid rgba(59, 130, 246, 0.2);">
+            <h3 style="display: flex; align-items: center; gap: 8px;">
+                <span>🚀</span> Enrollment Pipeline
+            </h3>
+            <div class="chips" style="margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <span style="${activeStyle}">1. Account Configured ✓</span>
+                <span style="${hasEnlisted ? activeStyle : pendingStyle}">2. Subject Enlistment ${hasEnlisted ? '✓' : ''}</span>
+                <span style="${isApproved ? activeStyle : pendingStyle}">3. Assessment & Payment ${isApproved ? '✓' : ''}</span>
+                <span style="${isApproved ? activeStyle : pendingStyle}">4. COR Generation ${isApproved ? '✓' : ''}</span>
+            </div>
+        </section>`;
+    
+    }
+    else if (studentTab === "enroll") {
+        content = typeof vSubjectSelection === "function" ? vSubjectSelection() : `
+        <section class="card">
+            <h3>Subject Enlistment Module</h3>
+            <p class="mu">Select your curriculum subjects securely for the current term.</p>
+        </section>`;
+    } else if (studentTab === "schedule") {
+        content = `<div id="schedule-container"><p class="mu">Loading schedule...</p></div>`;
+        setTimeout(loadStudentSchedule, 50);
+    } else if (studentTab === "instructors") {
+        content = `<div id="instructors-container"><p class="mu">Loading instructors...</p></div>`;
+        setTimeout(loadInstructorsDataIntoView, 50);
+    } else if (studentTab === "profile") {
+        content = vProfile();
+    }else if (studentTab === "cor") {
+        content = `<div id="cor-container"><p class="mu">Loading COR...</p></div>`;
+        setTimeout(loadStudentCOR, 50);
+    }
+
+    
+    const nav = `
+        <div class="sl">Student Portal</div>
+        <button class="${studentTab === "overview" ? "on" : ""}" onclick="setStudentTab('overview')">${ic("dash", 18)}<span>Dashboard</span></button>
+        <button class="${studentTab === "enroll" ? "on" : ""}" onclick="setStudentTab('enroll')">${ic("enr", 18)}<span>Enlistment</span></button>
+        <button class="${studentTab === "schedule" ? "on" : ""}" onclick="setStudentTab('schedule')">📅<span>Schedule</span></button>
+        <button class="${studentTab === "cor" ? "on" : ""}" onclick="setStudentTab('cor')">📄<span>COR Generation</span></button>
+        <button class="${studentTab === "instructors" ? "on" : ""}" onclick="setStudentTab('instructors')">${ic("us", 18)}<span>Instructors</span></button>
+        <button class="${studentTab === "profile" ? "on" : ""}" onclick="setStudentTab('profile')">${ic("lg", 18)}<span>Security & Profile</span></button>
+    `;
+
+    return `
+    <div class="shell">
+        <aside class="side">
+            <div class="sidehd">
+                <i class="lg">${fullName.charAt(0).toUpperCase()}</i>
+                <div><b>${fullName}</b><small>${program}</small></div>
+            </div>
+            ${nav}
+            <div style="margin-top: auto; padding-top: 15px;">
+                <button onclick="logout()" style="color: #f87171; background: rgba(239, 68, 68, 0.1); width: 100%; justify-content: center;">Terminate Session</button>
+            </div>
+        </aside>
+        <section class="pane">
+            <div class="pt">
+                <span class="pti">${ic(studentTab === 'overview' ? 'dash' : studentTab === 'enroll' ? 'enr' : studentTab === 'schedule' ? 'dash' : studentTab === 'instructors' ? 'us' : 'lg', 24)}</span>
+                <div>
+                    <h1>${studentTab === 'overview' ? 'Dashboard' : studentTab === 'enroll' ? 'Enlistment' : studentTab === 'schedule' ? 'Schedule' : studentTab === 'instructors' ? 'Instructors' : 'Security & Profile'}</h1>
+                    <span class="mu">Student Academic Portal</span>
+                </div>
+            </div>
+            <div class="crumb">Student / ${studentTab.charAt(0).toUpperCase() + studentTab.slice(1)}</div>
+            ${content}
+        </section>
+    </div>`;
+
+    
+}
+
+        function vProfile() {
+            const user = me || {};
+            
+            const fullName = user.full_name || "Student";
+            const program = user.program || "BS Information Technology";
+            const studentId = user.student_no || user.id || "SEMS-STU";
+            
+            // Kunin ang mga personal details mula sa profiles table (pansinin ang contact_no)
+            const birthdate = user.birthdate || "";
+            const age = user.age || "";
+            const gender = user.gender || "";
+            const contact = user.contact_no || user.contact || ""; 
+            const address = user.address || "";
+
+            return `
+    <div class="row" style="align-items: start; gap: 20px;">
+        <section class="card form" style="flex: 1; border-top: 3px solid #3b82f6;">
+            <h3 style="margin-bottom: 16px;">👤 Credentials & Identity</h3>
+            
+            <label style="font-weight: 500;">Student System ID</label>
+            <input type="text" value="${studentId}" disabled style="opacity: 0.6; font-family: monospace; letter-spacing: 1px;">
+            
+            <label style="font-weight: 500; margin-top: 12px;">Full Legal Name</label>
+            <input id="prof-name" type="text" value="${fullName}">
+            
+            <label style="font-weight: 500; margin-top: 12px;">Institutional Email</label>
+            <input type="email" value="${user.email || ''}" disabled style="opacity: 0.6; font-family: monospace;">
+            
+            <label style="font-weight: 500; margin-top: 12px;">Enrolled Program</label>
+            <input type="text" value="${program}" disabled style="opacity: 0.6;">
+            <label style="font-weight: 500; margin-top: 12px;">Section</label>
+            <input type="text" value="${user.section || 'Unassigned'}" disabled style="opacity: 0.6;">
+
+            <div style="display: flex; gap: 10px; margin-top: 12px;">
+                <div style="flex: 2;">
+                    <label style="font-weight: 500; font-size: 13px;">Birthdate</label>
+                    <input type="date" value="${birthdate}" disabled style="width: 100%; opacity: 0.6; cursor: not-allowed;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-weight: 500; font-size: 13px;">Age</label>
+                    <input type="number" value="${age}" disabled style="width: 100%; opacity: 0.6; cursor: not-allowed;">
+                </div>
+                <div style="flex: 2;">
+                    <label style="font-weight: 500; font-size: 13px;">Gender</label>
+                    <input type="text" value="${gender}" disabled style="width: 100%; opacity: 0.6; cursor: not-allowed;">
+                </div>
+            </div>
+
+            <label style="font-weight: 500; margin-top: 12px;">Contact Number</label>
+            <input type="text" value="${contact}" disabled style="width: 100%; opacity: 0.6; cursor: not-allowed;">
+
+            <label style="font-weight: 500; margin-top: 12px;">Home Address</label>
+            <input type="text" value="${address}" disabled style="width: 100%; opacity: 0.6; cursor: not-allowed;">
+            
+            <button class="p w" style="margin-top: 20px; font-weight: 600;" onclick="updateStudentProfile()">Commit Name Changes</button>
+        </section>
+        
+        <!-- Authentication Security Section dito... -->
+    </div>`;
+
+
+        }
+
+        async function loadStudentCOR() {
+    const user = me || {};
+    const userId = user.id;
+    const container = document.getElementById('cor-container');
+
+    if (!container) return;
+
+    // 1. Suriin muna kung Approved na ang status ng estudyante
+    const enrollmentStatus = user.enrollment_status || "Pending Verification";
+    if (enrollmentStatus !== "Approved") {
+        container.innerHTML = `
+            <section class="card" style="text-align: center; padding: 40px;">
+                <h3 style="margin-bottom: 8px; color: #f87171;">COR Not Available Yet</h3>
+                <p class="mu">Your Certificate of Registration will be automatically generated here once the admin approves your payment and assessment.</p>
+            </section>`;
+        return;
+    }
+
+    // 2. Kunin ang enrollment ID
+    const { data: enrollment } = await sb
+        .from('enrollments')
+        .select('id, or_no, fee')
+        .eq('student_id', userId)
+        .eq('status', 'Approved')
+        .maybeSingle();
+
+    if (!enrollment) {
+        container.innerHTML = `<p class="mu" style="text-align: center; padding: 20px;">No approved enrollment record found.</p>`;
+        return;
+    }
+
+    // 3. Kunin ang mga subject items
+    const { data: items } = await sb
+        .from('enrollment_items')
+        .select('subject_code')
+        .eq('enrollment_id', enrollment.id);
+
+    let rowsHTML = '';
+    let totalUnits = 0;
+
+    if (items && items.length > 0) {
+        items.forEach(item => {
+            totalUnits += 3; // Assuming 3 units per subject
+            rowsHTML += `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 12px; font-weight: 600; font-family: monospace;">${item.subject_code}</td>
+                    <td style="padding: 12px;">Major / General Education Subject</td>
+                    <td style="padding: 12px;">3</td>
+                    <td style="padding: 12px;">TBA</td>
+                    <td style="padding: 12px;">TBA</td>
+                </tr>
+            `;
+        });
+    }
+
+    // 4. I-render ang opisyal na COR layout
+    container.innerHTML = `
+        <section class="card" style="background: #1e293b; border: 1px solid rgba(59, 130, 246, 0.3); padding: 30px;" id="cor-printable-area">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #3b82f6; padding-bottom: 20px; margin-bottom: 20px;">
+                <div>
+                    <h2 style="margin: 0; color: #60a5fa;">STUDENT INFORMATION AND ENROLLMENT SYSTEM</h2>
+                    <p class="mu" style="margin: 4px 0 0 0;">Certificate of Registration (COR) • Academic Year 2026-2027</p>
+                </div>
+                <button class="p" onclick="window.print()" style="padding: 8px 16px; background: #3b82f6; border: none; border-radius: 6px; color: white; cursor: pointer; font-weight: 600;">🖨️ Print COR</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; font-size: 14px;">
+                <div><b>Student Name:</b> ${user.full_name || 'N/A'}</div>
+                <div><b>Student ID:</b> ${userId.slice(0, 8).toUpperCase()}</div>
+                <div><b>Program:</b> ${user.program || 'BS Information Technology'}</div>
+                <div><b>Section:</b> ${user.section || 'Unassigned'}</div>
+                <div><b>Official Receipt (OR) No:</b> ${enrollment.or_no || '0001'}</div>
+                <div><b>Status:</b> <span style="color: #34d399; font-weight: 600;">Officially Enrolled</span></div>
+                <div><b>Total Units Enrolled:</b> ${totalUnits} Units</div>
+            </div>
+
+            <h3 style="margin-bottom: 12px; font-size: 16px; border-left: 3px solid #10b981; padding-left: 8px;">Enrolled Subjects</h3>
+            <table style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <th style="padding: 12px; font-size: 13px; color: var(--mu);">Subject Code</th>
+                        <th style="padding: 12px; font-size: 13px; color: var(--mu);">Description</th>
+                        <th style="padding: 12px; font-size: 13px; color: var(--mu);">Units</th>
+                        <th style="padding: 12px; font-size: 13px; color: var(--mu);">Schedule</th>
+                        <th style="padding: 12px; font-size: 13px; color: var(--mu);">Room</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHTML}
+                </tbody>
+            </table>
+
+            <div style="display: flex; justify-content: space-between; margin-top: 40px; font-size: 13px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 20px;">
+                <div><p class="mu">Validated by: <b>Registrar Office</b></p></div>
+                <div style="text-align: right;"><p class="mu">Date Generated: ${new Date().toLocaleDateString()}</p></div>
+            </div>
+        </section>
+    `;
+}
+
+        async function loadStudentSchedule() {
+    const user = me || {};
+    const userId = user.id;
+    const container = document.getElementById('schedule-container');
+
+    if (!container) return;
+    if (!userId) {
+        container.innerHTML = `<p class="mu" style="text-align: center; padding: 20px;">User ID not found.</p>`;
+        return;
+    }
+
+    // 1. Kunin muna ang enrollment record ng estudyante kung saan Approved ang status
+    const { data: enrollmentData, error: enrError } = await sb
+        .from('enrollments')
+        .select('id, status')
+        .eq('student_id', userId)
+        .eq('status', 'Approved')
+        .maybeSingle();
+
+    if (enrError || !enrollmentData) {
+        container.innerHTML = `
+            <section class="card" style="text-align: center; padding: 40px;">
+                <h3 style="margin-bottom: 8px;">No Approved Enrollment Yet</h3>
+                <p class="mu">Your payment or enrollment status is still pending approval, or you haven't enrolled in any subjects yet.</p>
+            </section>`;
+        return;
+    }
+
+    // 2. Kunin ang mga subject items mula sa 'enrollment_items' gamit ang enrollment id
+    const { data: itemsData, error: itemsError } = await sb
+        .from('enrollment_items')
+        .select('subject_code')
+        .eq('enrollment_id', enrollmentData.id);
+
+    if (itemsError || !itemsData || itemsData.length === 0) {
+        container.innerHTML = `
+            <section class="card" style="text-align: center; padding: 40px;">
+                <h3 style="margin-bottom: 8px;">No Subjects Found</h3>
+                <p class="mu">No subject items were found under your approved enrollment.</p>
+            </section>`;
+        return;
+    }
+
+    // 3. I-render ang mga subject codes sa isang malinis na table
+    let html = `
+        <section class="card" style="padding: 0; overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <th style="padding: 14px 16px; font-size: 13px; color: var(--mu);">Subject Code</th>
+                        <th style="padding: 14px 16px; font-size: 13px; color: var(--mu);">Units</th>
+                        <th style="padding: 14px 16px; font-size: 13px; color: var(--mu);">Schedule & Time</th>
+                        <th style="padding: 14px 16px; font-size: 13px; color: var(--mu);">Room</th>
+                        <th style="padding: 14px 16px; font-size: 13px; color: var(--mu);">Instructor</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    const profMap = await sectionProfs(user.section);
+    itemsData.forEach(item => {
+        html += `
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 14px 16px; font-weight: 600; font-family: monospace; color: #60a5fa;">${item.subject_code}</td>
+                <td style="padding: 14px 16px;">3</td> <!-- Pwede mong baguhin kung may units column ka -->
+                <td style="padding: 14px 16px;">TBA</td>
+                <td style="padding: 14px 16px;">TBA</td>
+                <td style="padding: 14px 16px;">${profMap[item.subject_code] ? esc(profMap[item.subject_code].full_name) : "TBA"}</td>
+            </tr>
+        `;
+    });
+
+    html += `</tbody></table></section>`;
+    container.innerHTML = html;
+}
+        function checkNewPwStrength() {
+            const pw = $("#new-pw").value;
+            const hint = $("#new-pw-hint");
+            if (!hint) return;
+
+            const hasLen = pw.length >= 8;
+            const hasLetter = /[A-Za-z]/.test(pw);
+            const hasNum = /\d/.test(pw);
+
+            if (pw.length === 0) {
+                hint.style.color = "var(--mu)";
+                hint.textContent = "Must be 8+ characters with letters & numbers";
+                return;
+            }
+
+            if (hasLen && hasLetter && hasNum) {
+                hint.style.color = "#34d399";
+                hint.textContent = "✓ Password security optimal";
+            } else {
+                hint.style.color = "#f87171";
+                let missing = [];
+                if (!hasLen) missing.push("8+ chars");
+                if (!hasLetter) missing.push("letters");
+                if (!hasNum) missing.push("numbers");
+                hint.textContent = "Insecure: missing " + missing.join(", ");
+            }
+        }
+
+        async function updateStudentProfile() {
+            const newName = $("#prof-name").value.trim();
+            if (!newName) return toast("Name field cannot be left blank.", 1);
+
+            const { data, error } = await sb.auth.updateUser({
+                data: { full_name: newName }
+            });
+
+            if (error) return toast(error.message, 1);
+
+            if (typeof loadMe === "function") await loadMe();
+            toast("Student profile updated successfully!");
+            render();
+        }
+
+        async function updateStudentPassword() {
+            const pw = $("#new-pw").value;
+            const pw2 = $("#confirm-new-pw").value;
+
+            if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/\d/.test(pw)) {
+                return toast("Weak password: Minimum 8 characters with letters and numbers required.", 1);
+            }
+            if (pw !== pw2) {
+                return toast("Password mismatch: Please verify confirmation inputs.", 1);
+            }
+
+            const { data, error } = await sb.auth.updateUser({
+                password: pw
+            });
+
+            if (error) return toast(error.message, 1);
+
+            $("#new-pw").value = "";
+            $("#confirm-new-pw").value = "";
+            checkNewPwStrength();
+            toast("Master password updated securely!");
+        }
+
+        function calc() { const cs = [...document.querySelectorAll(".sub:checked")].map(x => x.value), u = cs.reduce((a, c) => a + SUBS.find(s => s.code === c).units, 0); $("#tu").textContent = u; $("#tf").textContent = peso(cs.length ? u * 1000 + 1500 : 0) }
+        const submitEnroll = () => call(sb.rpc("submit_enrollment", { codes: [...document.querySelectorAll(".sub:checked")].map(x => x.value) }), "Enrollment submitted. Please wait for the admin to verify your payment.");
+        const allEnr = () => q(sb.from("enrollments").select("*,profiles(full_name,student_no),enrollment_items(subject_code)").order("id", { ascending: false }));
+        const pay = id => call(sb.rpc("record_payment", { eid: id, or_no: $("#or" + id).value.trim() }), "Payment recorded.");
+        const decide = (id, ok) => call(sb.rpc("decide_enrollment", { eid: id, approve: ok, note: ok ? "" : $("#n" + id).value }), "Enrollment " + (ok ? "approved" : "rejected") + ".");
+        const postGrade = (sid, code) => { const v = parseFloat($("#g" + sid.slice(0, 8) + code).value); if (isNaN(v)) return toast("Choose a grade first.", 1); return call(sb.rpc("post_grade", { sid, code, g: v }), "Grade posted to the student portal.") };
+        let asSec = "", PROFS = [];
+        const setAsSec = v => { asSec = v; render() };
+        const assignProf = c => call(sb.rpc("admin_assign_professor", { p_section: asSec, p_code: c, p_prof: el("as" + c).value ? parseInt(el("as" + c).value) : null }), "Professor assignment saved.");
+        const saveProf = () => call(sb.rpc("admin_save_professor", { p_id: el("pid").value ? parseInt(el("pid").value) : null, p_name: el("pn").value, p_email: el("pe").value, p_dept: el("pd").value }), "Professor saved.");
+        const fillProf = id => { const x = PROFS.find(y => y.id === id); el("pid").value = x.id; el("pn").value = x.full_name; el("pe").value = x.email || ""; el("pd").value = x.department || ""; el("pn").scrollIntoView({ behavior: "smooth", block: "center" }) };
+        const delProf = id => { if (confirm("Delete this professor? Their section assignments will become unassigned.")) call(sb.rpc("admin_delete_professor", { p_id: id }), "Professor deleted.") };
+        const setSection = id => call(sb.rpc("admin_set_section", { p_uid: id, p_section: el("sec" + id).value }), "Section saved.");
+        let grSec = "";
+        const setGrSec = v => { grSec = v; render() };
+        const GRADES = [1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 4, 5];
+        const setTab = t => { tab = t; render() };
+        const setRole = id => call(sb.rpc("admin_set_role", { p_uid: id, p_role: el("ro" + id).value }), "Role updated.");
+        const saveSubject = () => call(sb.rpc("admin_save_subject", { p_code: el("sc").value, p_title: el("st").value, p_units: parseInt(el("su").value), p_prereq: el("sp").value }), "Subject saved.");
+        const fillSub = c => { const x = SUBS.find(y => y.code === c); el("sc").value = x.code; el("st").value = x.title; el("su").value = x.units; el("sp").value = x.prereq || ""; el("sc").scrollIntoView({ behavior: "smooth", block: "center" }) };
+        function drawCharts(stat, bySub) {
+            if (typeof Chart === "undefined") return;
+            const cv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+            const tx = cv("--tx"), bd = cv("--bd");
+            charts.forEach(c => c.destroy()); charts = [];
+            charts.push(new Chart(el("c1"), { type: "doughnut", data: { labels: ["Pending", "Approved", "Rejected"], datasets: [{ data: [stat.Pending, stat.Approved, stat.Rejected], backgroundColor: [cv("--wn"), cv("--ok"), cv("--bad")], borderColor: cv("--card") }] }, options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: tx } } } } }));
+            charts.push(new Chart(el("c2"), { type: "bar", data: { labels: bySub.map(x => x[0]), datasets: [{ label: "Students enrolled", data: bySub.map(x => x[1]), backgroundColor: cv("--ac"), borderRadius: 6 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: tx }, grid: { color: bd } }, y: { beginAtZero: true, ticks: { color: tx, precision: 0 }, grid: { color: bd } } } } }));
+        }
+        async function aDa() {
+            const [e, st, lg0] = await Promise.all([allEnr(), q(sb.from("profiles").select("*").eq("role", "Student").order("created_at", { ascending: false })), q(sb.from("audit_log").select("*,profiles(full_name)").order("id", { ascending: false }).limit(25))]);
+            const lg = lg0.filter(l => !/^Time (in|out)$/.test(l.action)).slice(0, 6);
+            const stat = { Pending: 0, Approved: 0, Rejected: 0 }, counts = {}, enrolled = new Set();
+            let collected = 0, paidCount = 0;
+            for (const x of e) {
+                stat[x.status]++;
+                if (x.paid) { collected += Number(x.fee); paidCount++ }
+                if (x.status !== "Rejected") { enrolled.add(x.student_id); for (const c of codes(x)) counts[c] = (counts[c] || 0) + 1 }
+            }
+            const total = e.length || 1, pending = e.filter(x => x.status === "Pending"), unpaid = pending.filter(x => !x.paid).length;
+            const bySub = Object.entries(counts).sort((a, b) => a[0].localeCompare(b[0]));
+            after = () => drawCharts(stat, bySub);
+            const hr = new Date().getHours(), greeting = hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
+            const today = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+            const msg = pending.length ? `${pending.length} enrollment request${pending.length > 1 ? "s are" : " is"} waiting for you, and ${unpaid} still need${unpaid === 1 ? "s" : ""} a payment record.` : "You are all caught up. There are no pending enrollment requests.";
+            const banner = `<div class="banner"><div><span class="bd">${today}</span><h2>${greeting}, ${esc(me.full_name.split(" ")[0] || "Admin")}</h2><p>${msg}</p></div><div class="bb"><button onclick="setTab('enr')">Review requests</button><button class="solid" onclick="setTab('gr')">Post grades</button></div></div>`;
+            const card = (cls, icon, label, val, to, pct, cap, small) => `<div class="sc ${cls}"><div class="sct">${ring(pct, icon)}<div><b${small ? ` style="font-size:21px"` : ""}>${val}</b><span class="l">${label}</span><span class="cap">${cap}</span></div></div><button onclick="setTab('${to}')"><span>View details</span>${ic("arrow", 14)}</button></div>`;
+            const pc = n => Math.round(n / total * 100);
+            const stuPct = st.length ? Math.round(enrolled.size / st.length * 100) : 0;
+            const cards = card("", "us", "Total students", st.length, "us", stuPct, stuPct + "% have enrolled") + card("w", "enr", "Pending requests", stat.Pending, "enr", pc(stat.Pending), pc(stat.Pending) + "% of all requests") + card("b", "warn", "Awaiting payment", unpaid, "enr", pc(unpaid), pc(unpaid) + "% of all requests") + card("o", "ok", "Approved", stat.Approved, "gr", pc(stat.Approved), pc(stat.Approved) + "% of all requests") + card("v", "cash", "Total collected", peso(collected), "enr", pc(paidCount), pc(paidCount) + "% of requests paid", 1);
+            const queue = pending.length ? pending.slice(0, 5).map(x => `<div class="qi">${avatar(x.profiles.full_name)}<div class="qm"><b>${esc(x.profiles.full_name)}</b><span class="mu">${codes(x).join(", ")} · ${peso(x.fee)}</span></div>${tag(x.paid ? "Paid" : "Unpaid")}<button onclick="setTab('enr')">Review</button></div>`).join("") : `<p class="mu">Nothing to review right now.</p>`;
+            const feed = lg.length ? lg.map(l => `<div class="ti"><i></i><div><b>${esc(l.action)}</b><span class="mu">${esc(l.profiles?.full_name || "System")} · ${ago(l.created_at)}</span></div></div>`).join("") : `<p class="mu">No activity yet.</p>`;
+            const rows = st.map((u, i) => `<tr><td>${i + 1}</td><td><div class="who">${avatar(u.full_name)}<div>${esc(u.full_name)}<div class="mu">${esc(u.email)}</div></div></div></td><td>${esc(u.student_no || "")}</td><td>${esc(u.program)}</td><td data-order="${esc(u.created_at)}">${esc(new Date(u.created_at).toLocaleDateString())}</td></tr>`);
+            return `${banner}<div class="sgrid">${cards}</div>
+<div class="two"><div class="card"><h2>Needs your attention</h2>${queue}</div><div class="card"><h2>Recent activity</h2><div class="tl">${feed}</div></div></div>
+<div class="charts"><div class="card"><h2>Enrollment status</h2><div class="cbox"><canvas id="c1"></canvas></div></div><div class="card"><h2>Enrollments per subject</h2><div class="cbox"><canvas id="c2"></canvas></div></div></div>
+<div class="card"><h2>Newest students</h2>${table(["#", "Student", "Student ID", "Program", "Registered"], rows, "No students have registered yet.", true)}</div>`
+        }
+        async function aEnr() {
+            const e = await allEnr();
+            const rows = e.map(x => `<tr><td>${esc(x.profiles.full_name)}<div class="mu">#${x.id} · ${esc(x.profiles.student_no)}</div></td><td>${codes(x).join(", ")}</td><td>${peso(x.fee)}</td><td>${x.paid ? tag("Paid") + `<div class="mu">OR ${esc(x.or_no)}</div>` : (x.status === "Pending" ? `<div class="inl"><input id="or${x.id}" placeholder="OR-0001"><button class="g" onclick="pay(${x.id})">Record</button></div>` : tag("Unpaid"))}</td><td>${x.status === "Pending" ? `<div class="inl"><button class="g" onclick="decide(${x.id},true)">Approve</button><input id="n${x.id}" placeholder="Reason if rejecting"><button class="d" onclick="decide(${x.id},false)">Reject</button></div>` : tag(x.status)}</td></tr>`);
+            return `<div class="card"><h2>Enrollment requests</h2><p class="mu">Record the student's payment first, then approve. Approval is blocked until payment is recorded.</p>${table(["Student", "Subjects", "Fee", ["Payment"], ["Decision"]], rows, "No enrollment requests yet.", true)}</div>`
+        }
+        async function aGr() {
+            const [items, gr] = await Promise.all([q(sb.from("enrollment_items").select("subject_code,enrollments!inner(student_id,status,profiles(full_name,student_no,section))").eq("enrollments.status", "Approved")), q(sb.from("grades").select("*"))]);
+            const sec = x => x.enrollments.profiles.section || "";
+            const secs = [...new Set(items.map(sec).filter(Boolean))].sort();
+            const list = items.filter(x => !grSec || (grSec === "_none" ? !sec(x) : sec(x) === grSec)).sort((x, y) => (sec(x) || "\uffff").localeCompare(sec(y) || "\uffff") || x.subject_code.localeCompare(y.subject_code) || x.enrollments.profiles.full_name.localeCompare(y.enrollments.profiles.full_name));
+            const rows = list.map(x => { const sid = x.enrollments.student_id, g = gr.find(y => y.student_id === sid && y.subject_code === x.subject_code); return `<tr><td>${esc(sec(x)) || '<span class="mu">No section</span>'}</td><td>${x.subject_code}</td><td>${esc(x.enrollments.profiles.full_name)}<div class="mu">${esc(x.enrollments.profiles.student_no)}</div></td><td style="width:130px"><select id="g${sid.slice(0, 8)}${x.subject_code}"><option value="">Select</option>${GRADES.map(v => `<option value="${v}" ${g && Number(g.grade) === v ? "selected" : ""}>${v.toFixed(2)}</option>`).join("")}</select></td><td><button class="p" onclick="postGrade('${sid}','${x.subject_code}')">Post</button></td></tr>` });
+            const flt = `<div class="inl" style="margin-bottom:12px;max-width:280px"><select onchange="setGrSec(this.value)"><option value="">All sections</option>${secs.map(c => `<option ${grSec === c ? "selected" : ""}>${esc(c)}</option>`).join("")}<option value="_none" ${grSec === "_none" ? "selected" : ""}>No section</option></select></div>`;
+            return `<div class="card"><h2>Post grades</h2><p class="mu">Students are sorted by section. Only officially enrolled (approved) students appear here. Grades go straight to the student portal.</p>${flt}${table(["Section", "Subject", "Student", ["Grade"], [""]], rows, "No approved enrollments for this selection.", true)}</div>`
+        }
+        async function aSec() {
+            const st = await q(sb.from("profiles").select("*").eq("role", "Student").order("full_name"));
+            const secs = [...new Set(st.map(u => u.section).filter(Boolean))].sort();
+            const rows = st.map(u => `<tr><td>${esc(u.full_name)}<div class="mu">${esc(u.student_no || "")}</div></td><td>${esc(u.program)}</td><td data-order="${esc(u.section || "~")}">${u.section ? esc(u.section) : '<span class="mu">Unassigned</span>'}</td><td><div class="inl"><input id="sec${u.id}" list="seclist" value="${esc(u.section || "")}" placeholder="e.g. BSIT-2C" maxlength="20"><button class="p" onclick="setSection('${u.id}')">Save</button></div></td></tr>`);
+            return `<div class="card"><h2>Assign sections</h2><p class="mu">Give each student a section. The Grades page is sorted and filtered by these sections.</p><datalist id="seclist">${secs.map(c => `<option value="${esc(c)}">`).join("")}</datalist>${table(["Student", "Program", "Section", ["Assign section"]], rows, "No students have registered yet.", true)}</div>`
+        }
+        async function aPr() {
+            const [pf, subs, ss, st] = await Promise.all([q(sb.from("professors").select("*").order("full_name")), q(sb.from("subjects").select("*").order("code")), q(sb.from("section_subjects").select("*")), q(sb.from("profiles").select("section").eq("role", "Student"))]);
+            PROFS = pf;
+            const secs = [...new Set(st.map(u => u.section).filter(Boolean))].sort();
+            if (!asSec || !secs.includes(asSec)) asSec = secs[0] || "";
+            const cur = c => (ss.find(x => x.section === asSec && x.subject_code === c) || {}).professor_id;
             const arows = subs.map(x => `<tr><td>${x.code} \u2013 ${esc(x.title)}</td><td><select id="as${x.code}"><option value="">\u2014 unassigned \u2014</option>${pf.map(p => `<option value="${p.id}" ${cur(x.code) === p.id ? "selected" : ""}>${esc(p.full_name)}</option>`).join("")}</select></td><td><button class="p" onclick="assignProf('${x.code}')">Save</button></td></tr>`);
             const picker = `<div class="inl" style="margin-bottom:12px;max-width:320px"><select onchange="setAsSec(this.value)">${secs.map(c => `<option ${asSec === c ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></div>`;
             const assign = !secs.length ? `<p class="mu">No sections yet. Assign sections to students first in the Sections tab.</p>` : !pf.length ? `<p class="mu">Add at least one professor below, then assign them here.</p>` : `${picker}${table(["Subject", "Professor", [""]], arows, "No subjects yet.", false)}`;
